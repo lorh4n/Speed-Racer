@@ -5,7 +5,12 @@
 
 class VulkanManager {
    public:
-      void teste();
+      void run();
+   private:
+      void initVulkan();
+      void initWindow();
+      void mainLoop();
+      void cleanup();
 };
 
 #endif

@@ -12,4 +12,28 @@ Simborraaa!! 🚗💨
 
 > Primeira coisa que queria comentar: o uso de IA nesse projeto vai ser meramente organizacional, ou seja, vou pedir só recomendações sobre boas práticas de programação e arquitetura do projeto. Mas, sem querer ser hipócrita, posso acabar usando se eu estiver me ferrando muito e não conseguir encontrar um bug. Obs: uso IA pra formatar esse diário também, não vou gastar tempo formatando markdown.
 
-Aprendi usar o cmake direito?? talvez.. defifinitamente nao
+Aprendi usar o cmake direito?? talvez... definitivamente não.
+
+---
+
+### 📁 Estrutura Básica do Projeto
+
+```plaintext
+Speed-Racer/
+├── assets/                # Recursos do jogo (imagens, sons, etc)
+├── build/                 # Arquivos de build (gerado pelo CMake)
+├── docs/                  # Documentação do projeto
+│   └── Diary.md           # Este diário
+├── include/               # Headers (.hpp)
+│   └── core/
+│       └── VulkanManager.hpp
+├── libs/                  # Bibliotecas externas
+├── LICENSE                # Licença do projeto
+├── src/                   # Código-fonte (.cpp)
+│   ├── app/
+│   │   └── main.cpp
+│   └── core/              # Implementação dos hearders do include/core
+└── tools/                 # Scripts e ferramentas auxiliares
+    ├── build_and_run.sh
+    └── run.sh
+```

@@ -1,13 +1,18 @@
 #include <iostream>
-#include <vulkan/vulkan.h>
+#include <stdexcept>
 
 #include <core/VulkanManager.hpp>
 
 int main() {
 
-	VulkanManager vulquinho;
+	VulkanManager app;
 
-	vulquinho.teste();
+	try {
+		app.run();
+	} catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 
 	std::cout << "Hello World" << std::endl;
 

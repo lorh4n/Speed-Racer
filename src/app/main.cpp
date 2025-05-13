@@ -4,17 +4,12 @@
 #include <core/VulkanManager.hpp>
 
 int main() {
-
-	VulkanManager app;
-
-	try {
-		app.run();
-	} catch (const std::exception& e) {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	std::cout << "Hello World" << std::endl;
-
-	return 0;
+    try {
+        VulkanManager vulkanManager(1280, 720, "Speed Racer");
+        vulkanManager.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+    return 0;
 }

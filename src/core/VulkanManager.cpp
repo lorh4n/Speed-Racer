@@ -1,24 +1,56 @@
 #include <core/VulkanManager.hpp>
 
-VulkanManager::VulkanManager(): 
-   window(800,600, "Speed Racer")
-{};
+VulkanManager::VulkanManager(int width, int height, const char* title)
+    : window(width, height, title), instance(VK_NULL_HANDLE), surface(VK_NULL_HANDLE) {
+}
 
 void VulkanManager::run() {
-   initWindow();
-
+   initVulkan();
    mainLoop();
+   cleanup();
 }
 
-void VulkanManager::initWindow(){
-   if (window.create()) {
-      std::cout << "Window criada com sucesso!" << std::endl;
-   }
-}
 void VulkanManager::mainLoop() {
-   while (!window.shouldClose()) {
-      glfwPollEvents();
-   }
+    while (!window.shouldClose()) {
+        window.pollEvents();
+    }
 }
 
-VulkanManager::~VulkanManager() {}
+void VulkanManager::initVulkan() {
+   createInstance();
+}
+
+void VulkanManager::cleanup() {
+}
+
+VulkanManager::~VulkanManager() {
+    cleanup();
+}
+
+void VulkanManager::createInstance() {
+   VkApplicationInfo appInfo{};
+   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+   appInfo.pApplicationName = "Hello Triangle";
+   appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+   appInfo.pEngineName = "No Engine";
+   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+   appInfo.apiVersion = VK_API_VERSION_1_0;
+
+
+   VkInstanceCreateInfo createInfo{};
+   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+   createInfo.pApplicationInfo = &appInfo;
+
+   uint32_t glfwExtensionCount = 0;
+   const char** glfwExtensions;
+   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+   createInfo.enabledExtensionCount = glfwExtensionCount;
+   createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+   createInfo.enabledLayerCount = 0;
+
+   if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create instance!");
+   }
+}

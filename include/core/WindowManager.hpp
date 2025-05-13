@@ -12,8 +12,6 @@ class WindowManager {
       WindowManager(int width, int height, const char* title);
       ~WindowManager();
 
-      bool create();
-
       int getWidth() const { return  width;};
       int getHeight() const { return  height;};
 
@@ -21,8 +19,10 @@ class WindowManager {
       bool shouldClose() const;
 
       // Troca os buffers e processa eventos
-      void swapBuffers();
       void pollEvents();
+
+      // Método para criar a superfície Vulkan
+      VkSurfaceKHR createSurface(VkInstance instance) const;
    private:
       GLFWwindow* window;
       int width;

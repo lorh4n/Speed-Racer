@@ -37,3 +37,10 @@ Speed-Racer/
     ├── build_and_run.sh
     └── run.sh
 ```
+
+# 12 de maio de 2025
+ 
+ Descobri que eu sou obrigado a fazer um destrutor caso eu faça um construtor
+ implementei o basico deo WindowManager
+uma recomendaões de IA é não usar o glad pq eu to mexendo como vulkan ent usaria outra coisa
+mas posso me arrepender se for adicionar o opengl na engine depois???

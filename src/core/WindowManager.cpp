@@ -1,36 +1,32 @@
 #include <core/WindowManager.hpp>
 
-WindowManager::WindowManager(int width, int height, const char* title):
-   width(width), height(height), title(title) {
-      glfwInit();
-   };
-   
-bool WindowManager::create() {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-   //  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); VER ISSO DAQUI DEPOISS========================
-   window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-    if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        return false;
+WindowManager::WindowManager(int width, int height, const char* title)
+    : width(width), height(height), title(title), window(nullptr) {
+    if (!glfwInit()) {
+        throw std::runtime_error("Failed to initialize GLFW");
     }
-    glfwMakeContextCurrent(window);
-    glViewport(0, 0, width, height);
-    glEnable(GL_DEPTH_TEST);
-    return true;
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Usamos Vulkan
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);   // Janela fixa por enquanto
+
+    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    if (!window) {
+        glfwTerminate();
+        throw std::runtime_error("Failed to create GLFW window");
+    }
+}
+
+WindowManager::~WindowManager() {
+    if (window) {
+        glfwDestroyWindow(window);
+    }
+    glfwTerminate();
 }
 
 bool WindowManager::shouldClose() const {
     return window && glfwWindowShouldClose(window);
 }
 
-void WindowManager::swapBuffers() {
-    if (window) {
-        glfwSwapBuffers(window);
-    }
-}
-
 void WindowManager::pollEvents() {
     glfwPollEvents();
 }
-
-WindowManager::~WindowManager() {}

@@ -2,21 +2,26 @@
 #define VULKAN_MANAGER_HPP
 
 #include <iostream>
+#include <stdexcept>
 
 #include "WindowManager.hpp"
 
 class VulkanManager {
-   public:
-      VulkanManager();
-      ~VulkanManager();
-      void run();
-   private:
-      WindowManager window;
+public:
+    VulkanManager(int width, int height, const char* title);
+    ~VulkanManager();
+    void run();
 
-      void initVulkan();
-      void initWindow();
-      void mainLoop();
-      void cleanup();
+private:
+    WindowManager window;
+    VkInstance instance;
+    VkSurfaceKHR surface;
+
+    void initVulkan();
+    void mainLoop();
+    void cleanup();
+
+    void createInstance();
 };
 
 #endif

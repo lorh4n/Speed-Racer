@@ -3,10 +3,16 @@
 
 #include <iostream>
 
+#include "WindowManager.hpp"
+
 class VulkanManager {
    public:
+      VulkanManager();
+      ~VulkanManager();
       void run();
    private:
+      WindowManager window;
+
       void initVulkan();
       void initWindow();
       void mainLoop();

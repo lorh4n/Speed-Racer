@@ -1,27 +1,21 @@
 #include <core/WindowManager.hpp>
 
 WindowManager::WindowManager(int width, int height, const char* title):
-   width(width), height(height), title(title) {};
+   width(width), height(height), title(title) {
+      glfwInit();
+   };
    
 bool WindowManager::create() {
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+   //  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); VER ISSO DAQUI DEPOISS========================
    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         return false;
     }
-
     glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        glfwDestroyWindow(window);
-        window = nullptr;
-        return false;
-    }
-
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
-
     return true;
 }
 
@@ -38,3 +32,5 @@ void WindowManager::swapBuffers() {
 void WindowManager::pollEvents() {
     glfwPollEvents();
 }
+
+WindowManager::~WindowManager() {}

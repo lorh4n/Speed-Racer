@@ -7,7 +7,6 @@ VulkanManager::VulkanManager(int width, int height, const char* title)
 void VulkanManager::run() {
    initVulkan();
    mainLoop();
-   cleanup();
 }
 
 void VulkanManager::mainLoop() {
@@ -21,6 +20,7 @@ void VulkanManager::initVulkan() {
 }
 
 void VulkanManager::cleanup() {
+   vkDestroyInstance(instance, nullptr);
 }
 
 VulkanManager::~VulkanManager() {
@@ -28,6 +28,13 @@ VulkanManager::~VulkanManager() {
 }
 
 void VulkanManager::createInstance() {
+   if (enableValidationLayers && !checkValidationLayerSupport()) {
+      throw std::runtime_error("validation layers requested, but not available!");
+   }
+   // Debug Callback
+   auto extensions = getRequiredExtensions();
+   // --------------
+
    VkApplicationInfo appInfo{};
    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
    appInfo.pApplicationName = "Hello Triangle";
@@ -41,6 +48,10 @@ void VulkanManager::createInstance() {
    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
    createInfo.pApplicationInfo = &appInfo;
 
+   // ----- Debug Extensions ---------- //
+   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+   createInfo.ppEnabledExtensionNames = extensions.data();
+    // ------------------------------- //
    uint32_t glfwExtensionCount = 0;
    const char** glfwExtensions;
    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);

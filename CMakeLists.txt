@@ -8,12 +8,14 @@ add_executable(Speed_Racer
    src/app/main.cpp
    src/core/VulkanManager.cpp
    src/core/WindowManager.cpp
+   src/core/VulkanTools/VulkanTools.cpp
 )
 
 
 
 target_include_directories(Speed_Racer PRIVATE 
    ${CMAKE_CURRENT_SOURCE_DIR}/include
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/VulkanUtils
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui
    # /usr/include/assimp

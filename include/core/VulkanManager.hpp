@@ -3,8 +3,11 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include "WindowManager.hpp"
+#include "VulkanUtils/VulkanTools.hpp"
+
 
 class VulkanManager {
 public:
@@ -14,7 +17,7 @@ public:
 
 private:
     WindowManager window;
-    VkInstance instance;
+    VkInstance  instance;
     VkSurfaceKHR surface;
 
     void initVulkan();

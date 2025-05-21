@@ -19,12 +19,17 @@ private:
     WindowManager window;
     VkInstance  instance;
     VkSurfaceKHR surface;
+    VkDebugUtilsMessengerEXT debugMessenger;
+
 
     void initVulkan();
     void mainLoop();
     void cleanup();
+    void setupDebugMessenger();
 
     void createInstance();
+
+
 };
 
 #endif

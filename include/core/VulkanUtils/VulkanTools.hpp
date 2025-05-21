@@ -9,23 +9,50 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#ifdef NDEBUG
-    const bool enableValidationLayers = false;
-#else
-    const bool enableValidationLayers = true;
-#endif
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
-};
+namespace VulkanTools { // Habilita validation layers apenas em modo debug
 
-bool checkValidationLayerSupport();
-std::vector<const char*> getRequiredExtensions();
+    // Habilita validation layers apenas em modo debug
+    #ifdef NDEBUG
+        const bool enableValidationLayers = false;
+    #else
+        const bool enableValidationLayers = true;
+    #endif
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData);
+    // Lista de validation layers
+    extern const std::vector<const char*> validationLayers;
+
+    // Verifica suporte para validation layers
+    bool checkValidationLayerSupport();
+
+    // Obtém extensões necessárias
+    std::vector<const char*> getRequiredExtensions();
+
+    // Callback para mensagens de validação
+    VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData);
+
+    // Cria o debug messenger
+    VkResult CreateDebugUtilsMessengerEXT(
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator,
+        VkDebugUtilsMessengerEXT* pDebugMessenger);
+
+    // Destrói o debug messenger
+    void DestroyDebugUtilsMessengerEXT(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        const VkAllocationCallbacks* pAllocator);
+
+    // Configura o debug messenger (nova função utilitária)
+    void setupDebugMessenger(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT& debugMessenger);
+
+}
 
 #endif

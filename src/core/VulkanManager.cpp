@@ -1,6 +1,7 @@
 #include <core/VulkanManager.hpp>
 
-VulkanManager::VulkanManager(int width, int height, const char *title) : window(width, height, title), instance(VK_NULL_HANDLE), surface(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE) {}
+VulkanManager::VulkanManager(int width, int height, const char *title) : window(width, height, title), instance(VK_NULL_HANDLE), surface(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE), physicalDevice (VK_NULL_HANDLE)
+{}
 
 void VulkanManager::run()
 {
@@ -20,6 +21,7 @@ void VulkanManager::initVulkan()
 {
     createInstance();
     VulkanTools::setupDebugMessenger(instance, debugMessenger);
+    pickPhysicalDevice();
 }
 
 void VulkanManager::cleanup()
@@ -83,3 +85,8 @@ void VulkanManager::createInstance()
         throw std::runtime_error("Failed to create instance!");
     }
 }
+
+void VulkanManager::pickPhysicalDevice() {
+    physicalDevice = PhysicalDeviceSelector::select(instance);
+}
+

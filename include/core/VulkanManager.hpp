@@ -7,6 +7,7 @@
 
 #include "WindowManager.hpp"
 #include "VulkanUtils/VulkanTools.hpp"
+#include <core/physicalDevice.hpp>
 
 
 class VulkanManager {
@@ -20,15 +21,15 @@ private:
     VkInstance  instance;
     VkSurfaceKHR surface;
     VkDebugUtilsMessengerEXT debugMessenger;
+    VkPhysicalDevice physicalDevice;
 
 
     void initVulkan();
     void mainLoop();
     void cleanup();
     void setupDebugMessenger();
-
+    void pickPhysicalDevice();
     void createInstance();
-
 
 };
 

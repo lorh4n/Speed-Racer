@@ -9,6 +9,8 @@ add_executable(Speed_Racer
    src/core/VulkanManager.cpp
    src/core/WindowManager.cpp
    src/core/VulkanTools/VulkanTools.cpp
+   src/core/physicalDevice.cpp
+   src/core/logicalDevice.cpp
 )
 
 

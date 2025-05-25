@@ -11,6 +11,7 @@ add_executable(Speed_Racer
    src/core/VulkanTools/VulkanTools.cpp
    src/core/physicalDevice.cpp
    src/core/logicalDevice.cpp
+   src/core/queueManager.cpp
 )
 
 

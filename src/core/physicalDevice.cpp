@@ -1,7 +1,7 @@
 #include <core/physicalDevice.hpp>
 
 
-VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance) {
+VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance, VkSurfaceKHR surface, QueueManager& queueManager) {
    uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
    if (deviceCount == 0) {
@@ -10,7 +10,7 @@ VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance) {
    std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
    for (const auto& device : devices) {
-		if (isDeviceSuitable(device)) {
+      if (isDeviceSuitable(device, surface, queueManager)) {
 			return device;
 		}
 	}
@@ -20,21 +20,17 @@ VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance) {
 
 
 
-bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device) {
-    VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, QueueManager& queueManager) {
+   // Initialize QueueManager for this device
+    queueManager.initialize(device, surface);
+    
+    // Define requirements (same as in QueueManager::initialize for consistency)
+    std::vector<QueueManager::QueueRequirements> requirements = {
+        {QueueType::GRAPHICS, 1, VK_QUEUE_GRAPHICS_BIT, false},
+        {QueueType::PRESENT, 1, 0, true}
+    };
 
-    VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-    std::cout << "GPU ENCONTRADA: " << deviceProperties.deviceName << std::endl;
-
-    bool result = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader;
-
-    std::cout << "Tipo: " << deviceProperties.deviceType << " | Geometry Shader: " << deviceFeatures.geometryShader << std::endl;
-    if (!result) {
-        std::cout << "This Device is NOT Suitable!!" << std::endl;
-    }
-
-    return result;
+    // Check queue family support
+    return QueueManager::areQueueFamiliesSufficient(queueManager.getQueueFamilies(), requirements);
+    // Add more checks (e.g., extensions, features) as needed
 }

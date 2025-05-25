@@ -4,30 +4,40 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-
-#include <iostream>
+#include <vulkan/vulkan.h>
+#include <vector>
+#include <string>
+#include <stdexcept>
 
 class WindowManager {
-   public:
-      WindowManager(int width, int height, const char* title);
-      ~WindowManager();
+public:
+    WindowManager(int width, int height, const std::string& title);
+    ~WindowManager();
 
-      int getWidth() const { return  width;};
-      int getHeight() const { return  height;};
+    // Get window dimensions
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
 
-      GLFWwindow* getWindow() const { return window;};
-      bool shouldClose() const;
+    // Get the GLFW window handle
+    GLFWwindow* getWindow() const { return window; }
 
-      // Troca os buffers e processa eventos
-      void pollEvents();
+    // Check if the window should close
+    bool shouldClose() const;
 
-      // Método para criar a superfície Vulkan
-      VkSurfaceKHR createSurface(VkInstance instance) const;
-   private:
-      GLFWwindow* window;
-      int width;
-      int height;
-      const char* title;
+    // Poll events and swap buffers
+    void pollEvents();
+
+    // Create Vulkan surface
+    void createSurface(VkInstance instance, VkSurfaceKHR* surface) const;
+
+    // Get required Vulkan instance extensions for GLFW
+    std::vector<const char*> getRequiredExtensions() const;
+
+private:
+    GLFWwindow* window;
+    int width;
+    int height;
+    std::string title;
 };
 
 #endif

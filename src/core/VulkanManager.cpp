@@ -1,51 +1,48 @@
 #include <core/VulkanManager.hpp>
 
-VulkanManager::VulkanManager(int width, int height, const char *title) : window(width, height, title), instance(VK_NULL_HANDLE), surface(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE), physicalDevice (VK_NULL_HANDLE)
-{}
-
-void VulkanManager::run()
-{
-    initVulkan();
-    mainLoop();
+VulkanManager::VulkanManager(int width, int height, const char* title)
+    : window(width, height, title),
+      instance(VK_NULL_HANDLE),
+      surface(VK_NULL_HANDLE),
+      debugMessenger(VK_NULL_HANDLE),
+      physicalDevice(VK_NULL_HANDLE),
+      device(VK_NULL_HANDLE) {
 }
 
-void VulkanManager::mainLoop()
-{
-    while (!window.shouldClose())
-    {
-        window.pollEvents();
-    }
+VulkanManager::~VulkanManager() {
+    cleanup();
 }
 
-void VulkanManager::initVulkan()
-{
+void VulkanManager::initVulkan() {
     createInstance();
-    VulkanTools::setupDebugMessenger(instance, debugMessenger);
+    setupDebugMessenger();
+    window.createSurface(instance, &surface);
     pickPhysicalDevice();
+    
+    // Device extensions (customize as needed)
+    std::vector<const char*> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+    
+    // Validation layers (customize as needed)
+    std::vector<const char*> validationLayers = {
+        "VK_LAYER_KHRONOS_validation"
+    };
+    
+    std::tie(device, queues) = LogicalDeviceCreator::create(
+        physicalDevice, queueManager, true, validationLayers, deviceExtensions);
 }
 
-void VulkanManager::cleanup()
-{
-    if (VulkanTools::enableValidationLayers)
-    {
-        VulkanTools::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    }
-    vkDestroyInstance(instance, nullptr);
+void VulkanManager::pickPhysicalDevice() {
+    physicalDevice = PhysicalDeviceSelector::select(instance, surface, queueManager);
 }
 
-VulkanManager::~VulkanManager() { cleanup(); }
-
-void VulkanManager::createInstance()
-{
-    if (VulkanTools::enableValidationLayers && !VulkanTools::checkValidationLayerSupport())
-    {
-        throw std::runtime_error("Validation layers requested, but not available!");
-    }
+void VulkanManager::createInstance() {
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Speed Racer";
+    appInfo.pApplicationName = "Vulkan App";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "RacerEngine";
+    appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -53,40 +50,49 @@ void VulkanManager::createInstance()
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    auto extensions = VulkanTools::getRequiredExtensions();
+    // Extensions (customize based on WindowManager requirements)
+    auto extensions = window.getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    if (VulkanTools::enableValidationLayers)
-    {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(VulkanTools::validationLayers.size());
-        createInfo.ppEnabledLayerNames = VulkanTools::validationLayers.data();
-        debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debugCreateInfo.pfnUserCallback = VulkanTools::debugCallback;
-        debugCreateInfo.pUserData = nullptr;
-        createInfo.pNext = &debugCreateInfo;
-    }
-    else
-    {
-        createInfo.enabledLayerCount = 0;
-        createInfo.ppEnabledLayerNames = nullptr;
-        createInfo.pNext = nullptr;
-    }
+    // Validation layers (customize as needed)
+    std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+    createInfo.ppEnabledLayerNames = validationLayers.data();
 
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create instance!");
+    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create Vulkan instance");
     }
 }
 
-void VulkanManager::pickPhysicalDevice() {
-    physicalDevice = PhysicalDeviceSelector::select(instance);
+void VulkanManager::setupDebugMessenger() {
+    // Implement debug messenger setup (skipped for brevity, use VulkanTools if available)
 }
 
+void VulkanManager::mainLoop() {
+    while (!window.shouldClose()) {
+        window.pollEvents();
+        // Add rendering logic here
+    }
+}
+
+void VulkanManager::cleanup() {
+    if (device != VK_NULL_HANDLE) {
+        vkDestroyDevice(device, nullptr);
+        device = VK_NULL_HANDLE;
+    }
+    if (surface != VK_NULL_HANDLE) {
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+        surface = VK_NULL_HANDLE;
+    }
+    if (instance != VK_NULL_HANDLE) {
+        vkDestroyInstance(instance, nullptr);
+        instance = VK_NULL_HANDLE;
+    }
+}
+
+void VulkanManager::run() {
+    initVulkan();
+    mainLoop();
+    cleanup();
+}

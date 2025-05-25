@@ -13,11 +13,12 @@ class LogicalDeviceCreator {
          VkQueue presentQueue;
       };
       static std::pair<VkDevice, DeviceQueue> create(
-         VkPhysicalDevice physicalDevice,
-         const QueueFamilyIndices& indices,
-         bool enableValidationLayers,
-         const std::vector<const char*>& validationLayer
-      );
+        VkPhysicalDevice physicalDevice,
+        QueueManager& queueManager,
+        bool enableValidationLayers,
+        const std::vector<const char*>& validationLayers,
+        const std::vector<const char*>& deviceExtensions
+    );
 };
 
 #endif

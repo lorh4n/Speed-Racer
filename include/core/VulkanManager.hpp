@@ -5,8 +5,12 @@
 #include <stdexcept>
 #include <vector>
 
-#include "WindowManager.hpp"
 #include "VulkanUtils/VulkanTools.hpp"
+
+#include <core/WindowManager.hpp>
+#include <core/logicalDevice.hpp>
+#include <core/queueManager.hpp>
+#include <core/physicalDevice.hpp>
 
 
 class VulkanManager {
@@ -17,19 +21,20 @@ public:
 
 private:
     WindowManager window;
-    VkInstance  instance;
+    VkInstance instance;
     VkSurfaceKHR surface;
     VkDebugUtilsMessengerEXT debugMessenger;
-
+    VkPhysicalDevice physicalDevice;
+    VkDevice device;
+    QueueManager queueManager;
+    LogicalDeviceCreator::DeviceQueue queues;
 
     void initVulkan();
     void mainLoop();
     void cleanup();
     void setupDebugMessenger();
-
+    void pickPhysicalDevice();
     void createInstance();
-
-
 };
 
 #endif

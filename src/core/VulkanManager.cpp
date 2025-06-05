@@ -19,18 +19,10 @@ void VulkanManager::initVulkan() {
     window.createSurface(instance, &surface);
     pickPhysicalDevice();
     
-    // Device extensions (customize as needed)
-    std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-    
-    // Validation layers (customize as needed)
-    std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
+    std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
     
     std::tie(device, queues) = LogicalDeviceCreator::create(
-        physicalDevice, queueManager, true, validationLayers, deviceExtensions);
+        physicalDevice, queueManager, VulkanTools::enableValidationLayers, VulkanTools::validationLayers, deviceExtensions);
 }
 
 void VulkanManager::pickPhysicalDevice() {
@@ -38,6 +30,10 @@ void VulkanManager::pickPhysicalDevice() {
 }
 
 void VulkanManager::createInstance() {
+    // Check validation layer support if enabled
+    if (VulkanTools::enableValidationLayers && !VulkanTools::checkValidationLayerSupport()) {
+        throw std::runtime_error("Validation layers requested, but not available!");
+    }
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Vulkan App";
@@ -50,15 +46,17 @@ void VulkanManager::createInstance() {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    // Extensions (customize based on WindowManager requirements)
     auto extensions = window.getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    // Validation layers (customize as needed)
-    std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-    createInfo.ppEnabledLayerNames = validationLayers.data();
+    if (VulkanTools::enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(VulkanTools::validationLayers.size());
+        createInfo.ppEnabledLayerNames = VulkanTools::validationLayers.data();
+    } else {
+        createInfo.enabledLayerCount = 0;
+        createInfo.ppEnabledLayerNames = nullptr;
+    }
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create Vulkan instance");
@@ -66,7 +64,9 @@ void VulkanManager::createInstance() {
 }
 
 void VulkanManager::setupDebugMessenger() {
-    // Implement debug messenger setup (skipped for brevity, use VulkanTools if available)
+    if (VulkanTools::enableValidationLayers) {
+        VulkanTools::setupDebugMessenger(instance, debugMessenger);
+    }
 }
 
 void VulkanManager::mainLoop() {
@@ -84,6 +84,10 @@ void VulkanManager::cleanup() {
     if (surface != VK_NULL_HANDLE) {
         vkDestroySurfaceKHR(instance, surface, nullptr);
         surface = VK_NULL_HANDLE;
+    }
+    if (VulkanTools::enableValidationLayers && debugMessenger != VK_NULL_HANDLE) {
+        VulkanTools::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        debugMessenger = VK_NULL_HANDLE;
     }
     if (instance != VK_NULL_HANDLE) {
         vkDestroyInstance(instance, nullptr);

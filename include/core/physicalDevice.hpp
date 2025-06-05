@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <core/SwapchainManager.hpp>
 #include <core/queueManager.hpp>
 
 class PhysicalDeviceSelector {

@@ -2,6 +2,7 @@
 
 
 VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance, VkSurfaceKHR surface, QueueManager& queueManager) {
+   std::cout << "- Checking Physicals Devices" << std::endl;
    uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
    if (deviceCount == 0) {
@@ -11,10 +12,10 @@ VkPhysicalDevice PhysicalDeviceSelector::select(VkInstance instance, VkSurfaceKH
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
    for (const auto& device : devices) {
       if (isDeviceSuitable(device, surface, queueManager)) {
+         std::cout << "-- Find an device supported" << std::endl;
 			return device;
 		}
 	}
-
 	throw std::runtime_error("failed to find a suitable GPU!");
 }
 
@@ -31,6 +32,6 @@ bool PhysicalDeviceSelector::isDeviceSuitable(VkPhysicalDevice device, VkSurface
     };
 
     // Check queue family support
-    return QueueManager::areQueueFamiliesSufficient(queueManager.getQueueFamilies(), requirements);
+    return QueueManager::areQueueFamiliesSufficient(queueManager.getQueueFamilies(), requirements) && SwapchainManager::checkDeviceSupportSwapChain(device);
     // Add more checks (e.g., extensions, features) as needed
 }

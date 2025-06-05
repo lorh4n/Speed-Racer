@@ -12,6 +12,7 @@ add_executable(Speed_Racer
    src/core/physicalDevice.cpp
    src/core/logicalDevice.cpp
    src/core/queueManager.cpp
+   src/core/SwapchainManager.cpp
 )
 
 

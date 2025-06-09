@@ -31,10 +31,10 @@ private:
 
     void initVulkan();
     void mainLoop();
-    void cleanup();
     void setupDebugMessenger();
     void pickPhysicalDevice();
     void createInstance();
+    void cleanup();
 };
 
 #endif

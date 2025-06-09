@@ -30,13 +30,14 @@ void VulkanManager::pickPhysicalDevice() {
 }
 
 void VulkanManager::createInstance() {
-    // Check validation layer support if enabled
+   // Check validation layer support if enabled
     if (VulkanTools::enableValidationLayers && !VulkanTools::checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
+
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Vulkan App";
+    appInfo.pApplicationName = "Speed Racer";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -46,13 +47,18 @@ void VulkanManager::createInstance() {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    auto extensions = window.getRequiredExtensions();
+    // Use VulkanTools::getRequiredExtensions() to get all required extensions
+    auto extensions = VulkanTools::getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     if (VulkanTools::enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(VulkanTools::validationLayers.size());
         createInfo.ppEnabledLayerNames = VulkanTools::validationLayers.data();
+
+        VulkanTools::populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     } else {
         createInfo.enabledLayerCount = 0;
         createInfo.ppEnabledLayerNames = nullptr;
@@ -66,6 +72,8 @@ void VulkanManager::createInstance() {
 void VulkanManager::setupDebugMessenger() {
     if (VulkanTools::enableValidationLayers) {
         VulkanTools::setupDebugMessenger(instance, debugMessenger);
+    } else {
+        std::cout << "Validation layers disabled, skipping debug messenger setup" << std::endl;
     }
 }
 

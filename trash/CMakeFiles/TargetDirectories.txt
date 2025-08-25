@@ -1,0 +1,4 @@
+/home/lorhan/git/Speed-Racer/trash/CMakeFiles/codebase.dir
+/home/lorhan/git/Speed-Racer/trash/CMakeFiles/test.dir
+/home/lorhan/git/Speed-Racer/trash/CMakeFiles/edit_cache.dir
+/home/lorhan/git/Speed-Racer/trash/CMakeFiles/rebuild_cache.dir

@@ -13,10 +13,15 @@ VulkanManager::~VulkanManager() {
     cleanup();
 }
 
+void VulkanManager::createSurface() {
+    window.createSurface(instance, &surface);
+}
+
+
 void VulkanManager::initVulkan() {
     createInstance();
     setupDebugMessenger();
-    window.createSurface(instance, &surface);
+    createSurface();
     pickPhysicalDevice();
     
     std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };

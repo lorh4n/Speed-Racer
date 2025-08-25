@@ -34,6 +34,7 @@ private:
     void setupDebugMessenger();
     void pickPhysicalDevice();
     void createInstance();
+    void createSurface();
     void cleanup();
 };
 

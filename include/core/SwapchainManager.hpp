@@ -38,14 +38,14 @@ public:
    VkSwapchainKHR swapchain;
    
    SwapChainSupportDetails querySwapchainSupport();
-   // std::vector<VkImage> swapchainImages;
-   // std::vector<VkImageView> swapchainImageViews;
-   // VkFormat swapchainImageFormat;
-   // VkExtent2D swapchainExtent;
+   std::vector<VkImage> swapchainImages;
+   std::vector<VkImageView> swapchainImageViews;
+   VkFormat swapchainImageFormat;
+   VkExtent2D swapchainExtent;
 
-   // VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-   // VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-   // VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height);
+   VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+   VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+   VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height);
 };
 
 #endif

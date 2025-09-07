@@ -1,7 +1,30 @@
 {
+   "cmake.buildDirectory": "${workspaceFolder}/build",
+   "cmake.configureOnOpen": true,
+   "cmake.buildTask": true,
+   "cmake.generator": "Unix Makefiles",
+   "cmake.debugConfig": {
+      "name": "Launch Speed_Racer",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Speed_Racer",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+         {
+            "name": "VK_LAYER_PATH", 
+            "value": "${env:VULKAN_SDK}/lib"
+         }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb"
+   },
+   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+   "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
    "files.associations": {
       "cctype": "cpp",
-      "clocale": "cpp",
+      "clocale": "cpp", 
       "cmath": "cpp",
       "cstdarg": "cpp",
       "cstddef": "cpp",
@@ -68,6 +91,7 @@
       "cfenv": "cpp",
       "typeindex": "cpp",
       "valarray": "cpp",
-      "variant": "cpp"
+      "variant": "cpp",
+      "hash_map": "cpp"
    }
 }

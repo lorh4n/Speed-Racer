@@ -39,8 +39,7 @@ void WindowManager::pollEvents() {
 }
 
 void WindowManager::createSurface(VkInstance instance, VkSurfaceKHR* surface) const {
-    VkResult result = glfwCreateWindowSurface(instance, window, nullptr, surface);
-    if (result != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create Vulkan surface");
     }
 }

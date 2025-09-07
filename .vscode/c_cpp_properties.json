@@ -3,18 +3,27 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/libs/",
-                "${workspaceFolder}/include/"
-
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/libs/glfw/include",
+                "${workspaceFolder}/libs/glm",
+                "${workspaceFolder}/libs/imgui",
+                "${workspaceFolder}/libs/imgui/backends",
+                "/usr/include/vulkan",
+                "/usr/include/assimp",
+                "/usr/include",
+                "/usr/local/include"
             ],
             "defines": [
-                "VK_USE_PLATFORM_XLIB_KHR"
+                "VK_USE_PLATFORM_XLIB_KHR",
+                "GLFW_INCLUDE_VULKAN"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }
     ],
     "version": 4

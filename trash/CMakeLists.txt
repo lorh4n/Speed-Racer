@@ -1,23 +1,15 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(Speed_Racer VERSION 0.0.1)
+project(codebase VERSION 0.0.1)
 
 find_package(Vulkan REQUIRED)
 
-add_executable(Speed_Racer 
-   src/app/main.cpp
-   src/core/VulkanManager.cpp
-   src/core/WindowManager.cpp
-   src/core/VulkanTools/VulkanTools.cpp
-   src/core/physicalDevice.cpp
-   src/core/logicalDevice.cpp
-   src/core/queueManager.cpp
-   src/core/SwapchainManager.cpp
+add_executable(codebase 
+   code_base.cpp
 )
 
 
-
-target_include_directories(Speed_Racer PRIVATE 
+target_include_directories(codebase PRIVATE 
    ${CMAKE_CURRENT_SOURCE_DIR}/include
    ${CMAKE_CURRENT_SOURCE_DIR}/include/VulkanUtils
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
@@ -25,14 +17,13 @@ target_include_directories(Speed_Racer PRIVATE
    # /usr/include/assimp
 )
 
-target_link_libraries(Speed_Racer 
+target_link_libraries(codebase 
     Vulkan::Vulkan
     glfw
     GL
     X11
     pthread
     dl
-    assimp
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

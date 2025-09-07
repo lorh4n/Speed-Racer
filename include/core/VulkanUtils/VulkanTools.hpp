@@ -28,14 +28,14 @@ namespace VulkanTools { // Habilita validation layers apenas em modo debug
     // Obtém extensões necessárias
     std::vector<const char*> getRequiredExtensions();
 
-    // Callback para mensagens de validação
+// Callback para mensagens de validação do Vulkan
     VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData);
 
-    // Cria o debug messenger
+    // Cria o debug messenger para capturar mensagens de validação
     VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -48,10 +48,14 @@ namespace VulkanTools { // Habilita validation layers apenas em modo debug
         VkDebugUtilsMessengerEXT debugMessenger,
         const VkAllocationCallbacks* pAllocator);
 
-    // Configura o debug messenger (nova função utilitária)
+    // Configura o debug messenger para a instância Vulkan
     void setupDebugMessenger(
         VkInstance instance,
         VkDebugUtilsMessengerEXT& debugMessenger);
+
+    // Popula a estrutura de criação do debug messenger com configurações padrão
+    void populateDebugMessengerCreateInfo(
+        VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
 }
 

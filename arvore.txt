@@ -1,0 +1,141 @@
+.
+├── arvore.txt
+├── assets
+│   └── shaders
+│       └── core
+├── build
+│   ├── build.ninja
+│   ├── CMakeCache.txt
+│   ├── CMakeFiles
+│   │   ├── 3.22.1
+│   │   ├── cmake.check_cache
+│   │   ├── CMakeOutput.log
+│   │   ├── CMakeTmp
+│   │   ├── Makefile2
+│   │   ├── Progress
+│   │   ├── progress.marks
+│   │   ├── rules.ninja
+│   │   ├── Speed_Racer.dir
+│   │   └── TargetDirectories.txt
+│   ├── cmake_install.cmake
+│   ├── compile_commands.json
+│   ├── CTestTestfile.cmake
+│   ├── Makefile
+│   └── Testing
+│       ├── 20250510-2213
+│       ├── 20250511-0000
+│       ├── 20250512-1532
+│       ├── 20250513-0001
+│       ├── 20250517-2146
+│       ├── 20250519-2009
+│       ├── 20250520-2001
+│       ├── 20250521-0114
+│       ├── 20250523-1320
+│       ├── 20250524-0014
+│       ├── 20250525-1622
+│       ├── 20250605-1503
+│       ├── 20250609-1714
+│       ├── 20250610-1317
+│       ├── 20250615-1732
+│       ├── 20250618-0135
+│       ├── 20250825-1749
+│       ├── 20250827-2019
+│       ├── 20250906-1727
+│       ├── TAG
+│       └── Temporary
+├── CMakeLists.txt
+├── docs
+│   ├── Diary.md
+│   └── UML
+├── include
+│   └── core
+│       ├── logicalDevice.hpp
+│       ├── physicalDevice.hpp
+│       ├── queueManager.hpp
+│       ├── SwapchainManager.hpp
+│       ├── VulkanManager.hpp
+│       ├── VulkanUtils
+│       └── WindowManager.hpp
+├── libs
+│   ├── glfw
+│   │   ├── build
+│   │   ├── CMake
+│   │   ├── CMakeLists.txt
+│   │   ├── cmake_uninstall.cmake.in
+│   │   ├── CONTRIBUTORS.md
+│   │   ├── deps
+│   │   ├── docs
+│   │   ├── examples
+│   │   ├── include
+│   │   ├── LICENSE.md
+│   │   ├── README.md
+│   │   ├── src
+│   │   └── tests
+│   ├── glm
+│   │   ├── cmake
+│   │   ├── CMakeLists.txt
+│   │   ├── copying.txt
+│   │   ├── doc
+│   │   ├── glm
+│   │   ├── readme.md
+│   │   ├── test
+│   │   └── util
+│   └── imgui
+│       ├── backends
+│       ├── docs
+│       ├── imconfig.h
+│       ├── imgui.cpp
+│       ├── imgui_demo.cpp
+│       ├── imgui_draw.cpp
+│       ├── imgui.h
+│       ├── imgui_internal.h
+│       ├── imgui_tables.cpp
+│       ├── imgui_widgets.cpp
+│       ├── imstb_rectpack.h
+│       ├── imstb_textedit.h
+│       ├── imstb_truetype.h
+│       ├── LICENSE.txt
+│       └── misc
+├── LICENSE
+├── src
+│   ├── app
+│   │   └── main.cpp
+│   └── core
+│       ├── logicalDevice.cpp
+│       ├── physicalDevice.cpp
+│       ├── queueManager.cpp
+│       ├── SwapchainManager.cpp
+│       ├── VulkanManager.cpp
+│       ├── VulkanTools
+│       └── WindowManager.cpp
+├── tools
+│   ├── build_and_run.sh
+│   └── run.sh
+└── trash
+    ├── CMakeCache.txt
+    ├── CMakeFiles
+    │   ├── 3.22.1
+    │   ├── cmake.check_cache
+    │   ├── CMakeDirectoryInformation.cmake
+    │   ├── CMakeOutput.log
+    │   ├── CMakeTmp
+    │   ├── codebase.dir
+    │   ├── Makefile2
+    │   ├── Makefile.cmake
+    │   ├── progress.marks
+    │   └── TargetDirectories.txt
+    ├── cmake_install.cmake
+    ├── CMakeLists.txt
+    ├── codebase
+    ├── code_base.cpp
+    ├── CTestTestfile.cmake
+    ├── erro.txt
+    ├── Makefile
+    ├── newtest.cpp
+    └── shaders
+        ├── frag.spv
+        ├── shader.frag
+        ├── shader.vert
+        └── vert.spv
+
+66 directories, 72 files

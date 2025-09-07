@@ -7,12 +7,16 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/Speed_Racer",
             "args": [],
-            "stopAtEntry": false,
+            "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [
                 {
                     "name": "VK_LAYER_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "/usr/share/vulkan/explicit_layer.d"
+                },
+                {
+                    "name": "VK_INSTANCE_LAYERS", 
+                    "value": "VK_LAYER_KHRONOS_validation"
                 }
             ],
             "externalConsole": false,
@@ -20,34 +24,19 @@
             "miDebuggerPath": "/usr/bin/gdb",
             "setupCommands": [
                 {
-                    "description": "Habilitar pretty-printing para gdb",
+                    "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Definir disassembly-flavor para Intel",
-                    "text": "set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
             ],
             "preLaunchTask": "Build and Configure",
-        },
-        {
-            "name": "Run Speed_Racer (Release)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Speed_Racer",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "VK_LAYER_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "externalConsole": false,
-            "preLaunchTask": "Build Release"
+            "linux": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/bin/gdb"
+            },
+            "logging": {
+                "engineLogging": true
+            }
         }
     ]
 }

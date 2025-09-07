@@ -1,12 +1,11 @@
 {
     "version": "0.2.0",
     "configurations": [
-      
         {
-            "name": "Debug SpeedRacer",
+            "name": "Debug Speed_Racer",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/SpeedRacer",
+            "program": "${workspaceFolder}/build/Speed_Racer",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -24,9 +23,31 @@
                     "description": "Habilitar pretty-printing para gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Definir disassembly-flavor para Intel",
+                    "text": "set disassembly-flavor intel",
+                    "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Build SpeedRacer"
+            "preLaunchTask": "Build and Configure",
+        },
+        {
+            "name": "Run Speed_Racer (Release)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Speed_Racer",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "VK_LAYER_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
+            "externalConsole": false,
+            "preLaunchTask": "Build Release"
         }
     ]
 }

@@ -6,7 +6,6 @@
 int main() {
 	try {
 		VulkanManager vulkanManager(1280, 720, "Speed Racer");
-		printf("teste");
 		vulkanManager.run();
 	}
 	catch (const std::exception &e) {

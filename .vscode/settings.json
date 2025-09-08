@@ -13,7 +13,7 @@
       "cwd": "${workspaceFolder}",
       "environment": [
          {
-            "name": "VK_LAYER_PATH", 
+            "name": "VK_LAYER_PATH",
             "value": "${env:VULKAN_SDK}/lib"
          }
       ],
@@ -22,9 +22,19 @@
    },
    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+   "C_Cpp.formatting": "clangFormat",
+   "C_Cpp.clang_format_style": "file"  ,
+   "editor.formatOnSave": false,
+   "editor.defaultFormatter": "ms-vscode.cpptools",
+   "[cpp]": {
+      "editor.defaultFormatter": "ms-vscode.cpptools"
+   },
+   "[c]": {
+      "editor.defaultFormatter": "ms-vscode.cpptools"
+   },
    "files.associations": {
       "cctype": "cpp",
-      "clocale": "cpp", 
+      "clocale": "cpp",
       "cmath": "cpp",
       "cstdarg": "cpp",
       "cstddef": "cpp",

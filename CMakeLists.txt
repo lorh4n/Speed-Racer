@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(Speed_Racer VERSION 0.0.1)
 
+# Flags de debug
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(Vulkan REQUIRED)
 
 add_executable(Speed_Racer 
@@ -15,14 +19,11 @@ add_executable(Speed_Racer
    src/core/SwapchainManager.cpp
 )
 
-
-
 target_include_directories(Speed_Racer PRIVATE 
    ${CMAKE_CURRENT_SOURCE_DIR}/include
    ${CMAKE_CURRENT_SOURCE_DIR}/include/VulkanUtils
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui
-   # /usr/include/assimp
 )
 
 target_link_libraries(Speed_Racer 

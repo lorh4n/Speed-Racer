@@ -23,13 +23,18 @@ void VulkanManager::initVulkan() {
 	setupDebugMessenger();
 	createSurface();
 	pickPhysicalDevice();
-
-	std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-	std::tie(device, queues) = LogicalDeviceCreator::create(
-	    physicalDevice, queueManager, VulkanTools::enableValidationLayers, VulkanTools::validationLayers, deviceExtensions);
-
+	createLogicalDevice();
 	setupSwapChain();
+	createGraphicsPipeline();
+}
+
+void VulkanManager::createGraphicsPipeline() {
+	
+}
+
+void VulkanManager::createLogicalDevice() {
+	std::tie(device, queues) = LogicalDeviceCreator::create(
+	    physicalDevice, queueManager, VulkanTools::enableValidationLayers, VulkanTools::validationLayers, deviceExtensions); // Using deviceExtensions from SwapchainManager.hpp
 }
 
 void VulkanManager::setupSwapChain() {

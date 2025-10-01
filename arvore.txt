@@ -9,10 +9,11 @@
 │   ├── CMakeFiles
 │   │   ├── 3.22.1
 │   │   ├── cmake.check_cache
+│   │   ├── CMakeDirectoryInformation.cmake
 │   │   ├── CMakeOutput.log
 │   │   ├── CMakeTmp
 │   │   ├── Makefile2
-│   │   ├── Progress
+│   │   ├── Makefile.cmake
 │   │   ├── progress.marks
 │   │   ├── rules.ninja
 │   │   ├── Speed_Racer.dir
@@ -20,7 +21,10 @@
 │   ├── cmake_install.cmake
 │   ├── compile_commands.json
 │   ├── CTestTestfile.cmake
+│   ├── libs
+│   │   └── glfw
 │   ├── Makefile
+│   ├── Speed_Racer
 │   └── Testing
 │       ├── 20250510-2213
 │       ├── 20250511-0000
@@ -41,6 +45,9 @@
 │       ├── 20250825-1749
 │       ├── 20250827-2019
 │       ├── 20250906-1727
+│       ├── 20250907-0047
+│       ├── 20250908-1107
+│       ├── 20251001-1431
 │       ├── TAG
 │       └── Temporary
 ├── CMakeLists.txt
@@ -138,4 +145,4 @@
         ├── shader.vert
         └── vert.spv
 
-66 directories, 72 files
+70 directories, 75 files

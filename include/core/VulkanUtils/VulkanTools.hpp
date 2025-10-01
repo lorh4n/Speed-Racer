@@ -18,6 +18,8 @@ namespace VulkanTools { // Habilita validation layers apenas em modo debug
     #else
         const bool enableValidationLayers = true;
     #endif
+    
+    // std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     // Lista de validation layers
     extern const std::vector<const char*> validationLayers;

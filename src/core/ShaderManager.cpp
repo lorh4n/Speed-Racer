@@ -33,3 +33,8 @@ VkShaderModule ShaderManager::createShaderModule(VkDevice device, const std::vec
 
    return shaderModule;   
 }
+
+void ShaderManager::destroyShaderModule(VkDevice device, VkShaderModule shaderModule) {
+   vkDestroyShaderModule(device, shaderModule, nullptr);
+}
+

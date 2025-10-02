@@ -36,8 +36,11 @@ void VulkanManager::createGraphicsPipeline() {
 	auto vertShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/vert.spv");
 	auto fragShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/frag.spv");
 
-	
+	VkShaderModule vertShaderModule = ShaderManager::createShaderModule(device, vertShaderCode);
+   VkShaderModule fragShaderModule = ShaderManager::createShaderModule(device, fragShaderCode);
 
+	ShaderManager::destroyShaderModule(device, vertShaderModule);
+	ShaderManager::destroyShaderModule(device, fragShaderModule);
 
 }
 
@@ -140,6 +143,7 @@ void VulkanManager::cleanup() {
 		vkDestroyInstance(instance, nullptr);
 		instance = VK_NULL_HANDLE;
 	}
+
 }
 
 void VulkanManager::run() {

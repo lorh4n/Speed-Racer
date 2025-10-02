@@ -13,8 +13,10 @@
 #include <core/queueManager.hpp>
 #include <core/physicalDevice.hpp>
 #include <core/SwapchainManager.hpp>
+#include <core/ShaderManager.hpp>
 
 
+// Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
 class VulkanManager {
 public:
     VulkanManager(int width, int height, const char* title);
@@ -30,7 +32,8 @@ private:
     VkDevice device;
     QueueManager queueManager;
     LogicalDeviceCreator::DeviceQueue queues;
-    std::unique_ptr<SwapchainManager> swapchainManager;  // Use pointer instead // Tenho que estudar depois doq ue esse unique_ptr
+    // Mantém a posse exclusiva do swapchain, garantindo liberação automática na destruição.
+    std::unique_ptr<SwapchainManager> swapchainManager;
 
     void initVulkan();
     void mainLoop();

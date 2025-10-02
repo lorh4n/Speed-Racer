@@ -18,6 +18,7 @@ void VulkanManager::createSurface() {
 	window.createSurface(instance, &surface);
 }
 
+// Executa a configuração completa da stack Vulkan respeitando as dependências entre etapas.
 void VulkanManager::initVulkan() {
 	createInstance();
 	setupDebugMessenger();
@@ -29,17 +30,28 @@ void VulkanManager::initVulkan() {
 }
 
 void VulkanManager::createGraphicsPipeline() {
-	
+	// auto vertShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/vert.spv");
+	// auto fragShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/frag.spv");
+	// O codigo funcinou nesse formato, mas eu tenho que entender depois qual é a raiz (./) do projeto
+	auto vertShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/vert.spv");
+	auto fragShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/frag.spv");
+
+	VkShaderModule vertShaderModule = ShaderManager::createShaderModule(device, vertShaderCode);
+   VkShaderModule fragShaderModule = ShaderManager::createShaderModule(device, fragShaderCode);
+
+	ShaderManager::destroyShaderModule(device, vertShaderModule);
+	ShaderManager::destroyShaderModule(device, fragShaderModule);
+
 }
 
 void VulkanManager::createLogicalDevice() {
+	// A fábrica retorna o dispositivo lógico juntamente com as filas configuradas.
 	std::tie(device, queues) = LogicalDeviceCreator::create(
 	    physicalDevice, queueManager, VulkanTools::enableValidationLayers, VulkanTools::validationLayers, deviceExtensions); // Using deviceExtensions from SwapchainManager.hpp
 }
 
 void VulkanManager::setupSwapChain() {
-	// Create SwapchainManager after all dependencies are ready
-	// Estudar depois o make_unique
+	// Cria o swapchain apenas após garantir que instância, dispositivo e superfícies estão prontos.
 	swapchainManager = std::make_unique<SwapchainManager>(
 	    device, physicalDevice, surface, *window.getWindow(), queueManager);
 	swapchainManager->createSwapchain(window.getWidth(), window.getHeight());
@@ -108,6 +120,7 @@ void VulkanManager::mainLoop() {
 }
 
 void VulkanManager::cleanup() {
+	// Desaloca em ordem inversa de criação para evitar o uso de recursos já destruídos.
 	swapchainManager.reset();
 
 	if (device != VK_NULL_HANDLE) {
@@ -130,6 +143,7 @@ void VulkanManager::cleanup() {
 		vkDestroyInstance(instance, nullptr);
 		instance = VK_NULL_HANDLE;
 	}
+
 }
 
 void VulkanManager::run() {

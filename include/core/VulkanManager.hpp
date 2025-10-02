@@ -39,6 +39,9 @@ private:
     void createInstance();
     void createSurface();
     void setupSwapChain();
+    void createLogicalDevice();
+    void createGraphicsPipeline();
+
     void cleanup();
 };
 

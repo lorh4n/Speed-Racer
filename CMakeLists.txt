@@ -17,6 +17,7 @@ add_executable(Speed_Racer
    src/core/logicalDevice.cpp
    src/core/queueManager.cpp
    src/core/SwapchainManager.cpp
+   src/core/ShaderManager.cpp
 )
 
 target_include_directories(Speed_Racer PRIVATE 

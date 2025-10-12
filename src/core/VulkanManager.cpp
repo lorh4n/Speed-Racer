@@ -30,18 +30,7 @@ void VulkanManager::initVulkan() {
 }
 
 void VulkanManager::createGraphicsPipeline() {
-	// auto vertShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/vert.spv");
-	// auto fragShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/frag.spv");
-	// O codigo funcinou nesse formato, mas eu tenho que entender depois qual é a raiz (./) do projeto
-	auto vertShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/vert.spv");
-	auto fragShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/frag.spv");
-
-	VkShaderModule vertShaderModule = ShaderManager::createShaderModule(device, vertShaderCode);
-   VkShaderModule fragShaderModule = ShaderManager::createShaderModule(device, fragShaderCode);
-
-	ShaderManager::destroyShaderModule(device, vertShaderModule);
-	ShaderManager::destroyShaderModule(device, fragShaderModule);
-
+	PipelineManager::createBasicGraphicsPipeline(device, &graphicsPipeline);
 }
 
 void VulkanManager::createLogicalDevice() {

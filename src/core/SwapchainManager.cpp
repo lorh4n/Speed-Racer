@@ -29,7 +29,7 @@ SwapchainManager::SwapChainSupportDetails SwapchainManager::querySwapchainSuppor
 }
 
 bool SwapchainManager::checkDeviceSupportSwapChain(VkPhysicalDevice device) {
-	std::cout << "- Verifing if Device Support Swap Chain";
+	std::cout << "[SwapchainManager] : Verifying if Device Supports Swap Chain";
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -105,7 +105,7 @@ bool SwapchainManager::createSwapchain(uint32_t width, uint32_t height) {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create swap chain!");
+		throw std::runtime_error("[SwapchainManager] : failed to create swap chain!");
 	}
 
 	return true;
@@ -155,7 +155,7 @@ bool SwapchainManager::createImageViews() {
    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
 
    if (imageCount == 0) {
-      throw std::runtime_error("A swapchain não retornou nenhuma imagem!");
+      throw std::runtime_error("[SwapchainManager] : Swapchain returned no images!");
    }
    
    swapchainImages.resize(imageCount);
@@ -192,11 +192,11 @@ bool SwapchainManager::createImageViews() {
 
       // 3. Cria a ImageView
       if (vkCreateImageView(device, &createInfo, nullptr, &swapchainImageViews[i]) != VK_SUCCESS) {
-         throw std::runtime_error("Falha ao criar as image views da swapchain!");
+         throw std::runtime_error("[SwapchainManager] : Failed to create swap chain image views!");
       }
    }
 
-   std::cout << "Image views criadas com sucesso!" << std::endl;
+   std::cout << "[SwapchainManager] : Image views created successfully!" << std::endl;
    return true;
 }
 

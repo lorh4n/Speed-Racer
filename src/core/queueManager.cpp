@@ -9,7 +9,7 @@ void QueueManager::initialize(VkPhysicalDevice device, VkSurfaceKHR surface) {
    };
 
    if (!areQueueFamiliesSufficient(queueFamilies, requirements)) {
-      throw std::runtime_error("Physical device does not support required queue families");
+      throw std::runtime_error("[QueueManager] : Physical device does not support required queue families");
    }
 }
 
@@ -77,12 +77,12 @@ bool QueueManager::areQueueFamiliesSufficient(
 VkQueue QueueManager::getQueue(VkDevice device, QueueType type, uint32_t queueIndex) {
     auto it = queueFamilies.find(type);
     if (it == queueFamilies.end() || queueIndex >= it->second.queueCount) {
-        throw std::runtime_error("Invalid queue type or index");
+        throw std::runtime_error("[QueueManager] : Invalid queue type or index");
     }
     VkQueue queue;
     vkGetDeviceQueue(device, it->second.index, queueIndex, &queue);
     if (queue == VK_NULL_HANDLE) {
-        throw std::runtime_error("Failed to retrieve queue handle");
+        throw std::runtime_error("[QueueManager] : Failed to retrieve queue handle");
     }
     return queue;
 }

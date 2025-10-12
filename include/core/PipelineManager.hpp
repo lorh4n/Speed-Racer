@@ -29,13 +29,16 @@ public:
       const PipelineConfig& config
    );
 
-   static void createBasicGraphicsPipeline(VkDevice device, VkPipeline* pipeline);
+   std::pair<VkPipeline, VkPipelineLayout> createBasicGraphicsPipeline(VkDevice device, const PipelineConfig& config);
 
    static void destroy (
       VkDevice device,
       VkPipeline pipeline,
       VkPipelineLayout layout
    );
+
+   VkRenderPass createRenderPass(VkDevice device, VkFormat swapchainImageFormat);
+   void destroyRenderPass(VkDevice device, VkRenderPass renderPass);
 };
 
 #endif

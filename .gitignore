@@ -1,1 +1,5 @@
 build/
+
+
+# Cabeçalho pre-compilado
+include/core/VulkanUtils/VulkanTools

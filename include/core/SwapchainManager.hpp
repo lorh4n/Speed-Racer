@@ -40,6 +40,8 @@ class SwapchainManager {
 		std::vector<VkPresentModeKHR>   presentModes;
 	};
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, uint32_t width, uint32_t height);
+	const VkExtent2D &getSwapchainExtent() const { return swapchainExtent; }
+	VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
 
   private:
 	VkDevice         &device;        // Referência, não cópia
@@ -52,7 +54,7 @@ class SwapchainManager {
 
 	SwapChainSupportDetails  querySwapchainSupport();
 	std::vector<VkImage>     swapchainImages;
-	std::vector<VkImageView> swapchainImageViews;
+		std::vector<VkImageView> swapchainImageViews;
 	VkFormat                 swapchainImageFormat;
 	VkExtent2D               swapchainExtent;
 

@@ -30,7 +30,12 @@ void VulkanManager::initVulkan() {
 }
 
 void VulkanManager::createGraphicsPipeline() {
-	PipelineManager::createBasicGraphicsPipeline(device, &graphicsPipeline);
+	PipelineConfig pipelineConfig{};
+	pipelineConfig.extend = swapchainManager->getSwapchainExtent();
+	renderPass = pipelineManager.createRenderPass(device, swapchainManager->getSwapchainImageFormat());
+	pipelineConfig.renderPass = renderPass;
+
+	std::tie(graphicsPipeline, graphicsPipelineLayout) = pipelineManager.createBasicGraphicsPipeline(device, pipelineConfig);
 }
 
 void VulkanManager::createLogicalDevice() {
@@ -54,7 +59,7 @@ void VulkanManager::pickPhysicalDevice() {
 void VulkanManager::createInstance() {
 	// Check validation layer support if enabled
 	if (VulkanTools::enableValidationLayers && !VulkanTools::checkValidationLayerSupport()) {
-		throw std::runtime_error("Validation layers requested, but not available!");
+		throw std::runtime_error("[VulkanManager] : Validation layers requested, but not available!");
 	}
 
 	VkApplicationInfo appInfo{};
@@ -88,7 +93,7 @@ void VulkanManager::createInstance() {
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create Vulkan instance");
+		throw std::runtime_error("[VulkanManager] : Failed to create Vulkan instance");
 	}
 }
 
@@ -97,7 +102,7 @@ void VulkanManager::setupDebugMessenger() {
 		VulkanTools::setupDebugMessenger(instance, debugMessenger);
 	}
 	else {
-		std::cout << "Validation layers disabled, skipping debug messenger setup" << std::endl;
+		std::cout << "[VulkanManager] : Validation layers disabled, skipping debug messenger setup" << std::endl;
 	}
 }
 
@@ -110,12 +115,18 @@ void VulkanManager::mainLoop() {
 
 void VulkanManager::cleanup() {
 	// Desaloca em ordem inversa de criação para evitar o uso de recursos já destruídos.
+    if (graphicsPipeline != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    }
+    if (graphicsPipelineLayout != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
+    }
+    if (renderPass != VK_NULL_HANDLE) {
+        vkDestroyRenderPass(device, renderPass, nullptr);
+    }
+
 	swapchainManager.reset();
 
-	if (device != VK_NULL_HANDLE) {
-		vkDestroyDevice(device, nullptr);
-		device = VK_NULL_HANDLE;
-	}
 	if (device != VK_NULL_HANDLE) {
 		vkDestroyDevice(device, nullptr);
 		device = VK_NULL_HANDLE;

@@ -5,7 +5,7 @@ namespace VulkanTools {
 const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 bool checkValidationLayerSupport() {
-	std::cout << "- Checking Validation Layer Support" << std::endl;
+	std::cout << "[VulkanTools] : Checking Validation Layer Support" << std::endl;
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -15,9 +15,9 @@ bool checkValidationLayerSupport() {
 	for (const char *layerName : validationLayers) {
 		bool layerFound = false;
 		for (const auto &layerProperties : availableLayers) {
-			if (strcmp(layerName, layerProperties.layerName) == 0) {
+		if (strcmp(layerName, layerProperties.layerName) == 0) {
 				layerFound = true;
-				std::cout << "\t Layer Found" << layerName << std::endl;
+				std::cout << "\t [VulkanTools] : Layer Found" << layerName << std::endl;
 				break;
 			}
 		}

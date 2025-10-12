@@ -5,7 +5,7 @@ std::vector<char> ShaderManager::readFile(const std::string& filename) {
    std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
    if(!file.is_open()) {
-      throw std::runtime_error("[ShaderManager]: failed to open File");
+      throw std::runtime_error("[ShaderManager] : failed to open File");
    }
 
    size_t fileSize = (size_t) file.tellg();
@@ -28,7 +28,7 @@ VkShaderModule ShaderManager::createShaderModule(VkDevice device, const std::vec
 
    VkShaderModule shaderModule;
    if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-      throw std::runtime_error("[ShaderManager] failed to create Shader Module");
+      throw std::runtime_error("[ShaderManager] : failed to create Shader Module");
    }
 
    return shaderModule;   

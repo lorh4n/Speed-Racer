@@ -5,7 +5,7 @@ WindowManager::WindowManager(int width, int height, const std::string &title) :
 	// Initialize GLFW
 	if (!glfwInit())
 	{
-		throw std::runtime_error("Failed to initialize GLFW");
+		throw std::runtime_error("[WindowManager] : Failed to initialize GLFW");
 	}
 
 	// Configure GLFW for Vulkan (no OpenGL context)
@@ -17,7 +17,7 @@ WindowManager::WindowManager(int width, int height, const std::string &title) :
 	if (!window)
 	{
 		glfwTerminate();
-		throw std::runtime_error("Failed to create GLFW window");
+		throw std::runtime_error("[WindowManager] : Failed to create GLFW window");
 	}
 
 	// Set user pointer for callbacks (optional, for future extensibility)
@@ -44,7 +44,7 @@ void WindowManager::pollEvents() {
 void WindowManager::createSurface(VkInstance instance, VkSurfaceKHR *surface) const {
 	if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to create Vulkan surface");
+		throw std::runtime_error("[WindowManager] : Failed to create Vulkan surface");
 	}
 }
 
@@ -53,7 +53,7 @@ std::vector<const char *> WindowManager::getRequiredExtensions() const {
 	const char **glfwExtensions     = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	if (!glfwExtensions)
 	{
-		throw std::runtime_error("Failed to retrieve GLFW required extensions");
+		throw std::runtime_error("[WindowManager] : Failed to retrieve GLFW required extensions");
 	}
 	return std::vector<const char *>(glfwExtensions, glfwExtensions + glfwExtensionCount);
 }

@@ -46,7 +46,7 @@ std::pair<VkDevice, LogicalDeviceCreator::DeviceQueue> LogicalDeviceCreator::cre
 
     VkDevice device;
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create logical device");
+        throw std::runtime_error("[LogicalDeviceCreator] : Failed to create logical device");
     }
 
     // Retrieve queues

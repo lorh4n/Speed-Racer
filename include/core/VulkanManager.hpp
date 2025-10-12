@@ -14,6 +14,7 @@
 #include <core/physicalDevice.hpp>
 #include <core/SwapchainManager.hpp>
 #include <core/ShaderManager.hpp>
+#include <core/PipelineManager.hpp>
 
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
@@ -34,6 +35,7 @@ private:
     LogicalDeviceCreator::DeviceQueue queues;
     // Mantém a posse exclusiva do swapchain, garantindo liberação automática na destruição.
     std::unique_ptr<SwapchainManager> swapchainManager;
+    VkPipeline graphicsPipeline;
 
     void initVulkan();
     void mainLoop();

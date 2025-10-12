@@ -2,9 +2,11 @@
 #define PIPELINE_MANAGER
 
 #include <vulkan/vulkan.h>
+#include <core/ShaderManager.hpp>
 
 #include <string>
 #include <utility>
+#include <iostream>
 
 struct PipelineConfig {
   VkExtent2D extend;
@@ -26,6 +28,8 @@ public:
       VkDevice device,
       const PipelineConfig& config
    );
+
+   static void createBasicGraphicsPipeline(VkDevice device, VkPipeline* pipeline);
 
    static void destroy (
       VkDevice device,

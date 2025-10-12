@@ -48,6 +48,7 @@ private:
     void setupSwapChain();
     void createLogicalDevice();
     void createGraphicsPipeline();
+    void createFramebuffers();
 
     void cleanup();
 };

@@ -201,6 +201,10 @@ bool SwapchainManager::createImageViews() {
 }
 
 void SwapchainManager::cleanup() {
+
+	for (auto framebuffer : swapchainFramebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
 	for (auto imageView : swapchainImageViews) {
         vkDestroyImageView(device, imageView, nullptr);
     }
@@ -209,4 +213,36 @@ void SwapchainManager::cleanup() {
 	if (swapchain != VK_NULL_HANDLE) {
 		vkDestroySwapchainKHR(device, swapchain, nullptr);
 	}
+}
+
+
+// ================== FrameBuffers ============================
+
+bool SwapchainManager::createFramebuffers(VkRenderPass renderPass) {
+	// Redimensiona o vetor para ter o mesmo tamanho que imageViews
+	swapchainFramebuffers.resize(swapchainImageViews.size());
+
+	// Cria um framebuffer para cada imageView
+	for (size_t i = 0; i < swapchainImageViews.size(); i++) {
+		VkImageView attachments[] = {
+			swapchainImageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = swapchainExtent.width;
+		framebufferInfo.height = swapchainExtent.height;
+		framebufferInfo.layers = 1;
+
+		if(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {
+			throw std::runtime_error("[SwapchainManager] : Failed to create framebuffer!");
+		}
+	}
+	std::cout << "[SwapchainManager] : Framebuffers created successfully! (" << swapchainFramebuffers.size() << " framebuffers)" << std::endl;
+   return true;
+
+
 }

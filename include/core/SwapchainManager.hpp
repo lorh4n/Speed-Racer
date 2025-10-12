@@ -13,8 +13,7 @@
 #include <core/queueManager.hpp>
 
 const std::vector<const char *> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 class SwapchainManager {
   public:
@@ -22,9 +21,7 @@ class SwapchainManager {
 	SwapchainManager(VkDevice &dev, VkPhysicalDevice &physDev, VkSurfaceKHR &surf, GLFWwindow &win, QueueManager &queue) :
 	    device(dev), physicalDevice(physDev), surface(surf), window(win), swapchain(VK_NULL_HANDLE), queueManager(queue) {
 	}
-	~SwapchainManager() {
-		cleanup();
-	}
+
 
 	bool createSwapchain(uint32_t width, uint32_t height);
 	bool createImageViews();
@@ -39,28 +36,38 @@ class SwapchainManager {
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR>   presentModes;
 	};
+	
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, uint32_t width, uint32_t height);
+	
 	const VkExtent2D &getSwapchainExtent() const { return swapchainExtent; }
+
 	VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
 
+	// FrameBuffers Functions
+	bool createFramebuffers(VkRenderPass renderPass);
+	const std::vector<VkFramebuffer>& getFramebuffers() const {
+		return swapchainFramebuffers;
+	}
+
+	~SwapchainManager() { cleanup(); }
   private:
-	VkDevice         &device;        // Referência, não cópia
-	VkPhysicalDevice &physicalDevice;
-	VkSurfaceKHR     &surface;
-	GLFWwindow       &window;
+	VkDevice &device;        // Referência, não cópia
+	GLFWwindow &window;
+	VkSurfaceKHR &surface;
+	VkSwapchainKHR swapchain;
 	QueueManager &queueManager;
-	VkSwapchainKHR    swapchain;
-
-
-	SwapChainSupportDetails  querySwapchainSupport();
-	std::vector<VkImage>     swapchainImages;
-		std::vector<VkImageView> swapchainImageViews;
-	VkFormat                 swapchainImageFormat;
-	VkExtent2D               swapchainExtent;
+	VkPhysicalDevice &physicalDevice;
+	SwapChainSupportDetails querySwapchainSupport();
+	
+	std::vector<VkImage> swapchainImages;
+	std::vector<VkImageView> swapchainImageViews;
+	VkFormat swapchainImageFormat;
+	VkExtent2D swapchainExtent;
+	
+	std::vector<VkFramebuffer> swapchainFramebuffers;
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 	VkPresentModeKHR   chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-
 };
 
 #endif

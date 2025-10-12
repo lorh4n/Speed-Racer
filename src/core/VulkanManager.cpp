@@ -32,7 +32,13 @@ void VulkanManager::initVulkan() {
 	createLogicalDevice();
 	setupSwapChain();
 	createGraphicsPipeline();
+	createFramebuffers();
     std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
+}
+
+void VulkanManager::createFramebuffers() {
+	swapchainManager->createFramebuffers(renderPass);
+	std::cout << "[VulkanManager] : Framebuffers created." << std::endl;
 }
 
 void VulkanManager::createGraphicsPipeline() {

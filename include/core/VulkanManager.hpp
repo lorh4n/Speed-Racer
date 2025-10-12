@@ -35,7 +35,6 @@ private:
     LogicalDeviceCreator::DeviceQueue queues;
     // Mantém a posse exclusiva do swapchain, garantindo liberação automática na destruição.
     std::unique_ptr<SwapchainManager> swapchainManager;
-    PipelineManager pipelineManager;
     VkRenderPass renderPass;
     VkPipelineLayout graphicsPipelineLayout;
     VkPipeline graphicsPipeline;

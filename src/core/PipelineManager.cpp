@@ -1,7 +1,7 @@
 #include "core/PipelineManager.hpp"
 
 
-std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createBasicGraphicsPipeline(VkDevice device, const PipelineConfig& config) {
+std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(VkDevice device, const PipelineConfig& config) {
    // auto vertShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/vert.spv");
 	// auto fragShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/frag.spv");
 	// O codigo funcinou nesse formato, mas eu tenho que entender depois qual é a raiz (./) do projeto
@@ -180,41 +180,8 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createBasicGraphicsPipe
    return std::make_pair(graphicsPipeline, pipelineLayout);
 }
 
-VkRenderPass PipelineManager::createRenderPass(VkDevice device, VkFormat swapchainImageFormat) {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = swapchainImageFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-
-    VkRenderPass renderPass;
-    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
-    }
-
-    return renderPass;
-}
-
-void PipelineManager::destroyRenderPass(VkDevice device, VkRenderPass renderPass) {
-    vkDestroyRenderPass(device, renderPass, nullptr);
+void PipelineManager::destroy(VkDevice device, VkPipeline pipeline, VkPipelineLayout layout) {
+    std::cout << "[PipelineManager] : Destroying graphics pipeline and layout..." << std::endl;
+    vkDestroyPipeline(device, pipeline, nullptr);
+    vkDestroyPipelineLayout(device, layout, nullptr);
 }

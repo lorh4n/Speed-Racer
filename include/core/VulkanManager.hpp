@@ -41,11 +41,12 @@ private:
     std::unique_ptr<CommandManager> commandManager;
     std::vector<VkCommandBuffer> commandBuffers;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
 
-
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+    uint32_t currentFrame = 0;
 
 
     void initVulkan();

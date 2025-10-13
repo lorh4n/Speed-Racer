@@ -35,9 +35,75 @@ void VulkanManager::initVulkan() {
 	setupSwapChain();
 	createGraphicsPipeline();
 	createFramebuffers();
-	createCommandPool();      // ← ADICIONE
+	createCommandPool();
 	createCommandBuffers();
+	createSyncObjects();
     std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
+}
+
+void VulkanManager::drawFrame() {
+    // 1. Esperar pelo frame anterior terminar
+    vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(device, 1, &inFlightFence);
+
+    // 2. Adquirir imagem da swapchain
+    uint32_t imageIndex;
+    vkAcquireNextImageKHR(device, swapchainManager->getSwapchain(), UINT64_MAX, 
+                          imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+    // 3. Resetar e gravar o command buffer
+    vkResetCommandBuffer(commandBuffers[imageIndex], 0);
+    recordCommandBuffer(commandBuffers[imageIndex], imageIndex);
+
+    // 4. Submeter o command buffer
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(queues.graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
+        throw std::runtime_error("[VulkanManager] : Failed to submit draw command buffer!");
+    }
+
+    // 5. Apresentar a imagem
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+	VkSwapchainKHR swapChains[] = {swapchainManager->getSwapchain()};    
+	presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+
+    vkQueuePresentKHR(queues.presentQueue, &presentInfo);
+}
+
+void VulkanManager::createSyncObjects() {
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Importante! Começa sinalizado
+
+	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
+			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
+		throw std::runtime_error("[VulkanManager] : Failed to create synchronization objects!");
+	}
+
+		std::cout << "[VulkanManager] : Synchronization objects created." << std::endl;
 }
 
 void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
@@ -106,13 +172,8 @@ void VulkanManager::createCommandPool() {
 void VulkanManager::createCommandBuffers() {
     size_t framebufferCount = swapchainManager->getFramebuffers().size();
     commandBuffers = commandManager->allocateCommandBuffers(framebufferCount);
-    
-    // Gravar cada command buffer
-    for (size_t i = 0; i < commandBuffers.size(); i++) {
-        recordCommandBuffer(commandBuffers[i], i);
-    }
-    
-    std::cout << "[VulkanManager] : Command buffers created and recorded." << std::endl;
+    std::cout << "[VulkanManager] : Command buffers created." << std::endl;
+    // NÃO gravar aqui - será feito no drawFrame()
 }
 
 void VulkanManager::createFramebuffers() {
@@ -207,6 +268,7 @@ void VulkanManager::setupDebugMessenger() {
 void VulkanManager::mainLoop() {
 	while (!window.shouldClose()) {
 		window.pollEvents();
+		drawFrame();
 		// Add rendering logic here
 	}
 }
@@ -214,16 +276,20 @@ void VulkanManager::mainLoop() {
 void VulkanManager::cleanup() {
     std::cout << "[VulkanManager] : Starting cleanup..." << std::endl;
 
+	vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+	vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+	vkDestroyFence(device, inFlightFence, nullptr);
+	std::cout << "[VulkanManager] : Synchronization objects destroyed." << std::endl;
 
-    // Command manager limpa automaticamente o pool e buffers
-    commandManager.reset();
-    std::cout << "[VulkanManager] : Command manager destroyed." << std::endl;
+	// Command manager limpa automaticamente o pool e buffers
+	commandManager.reset();
+	std::cout << "[VulkanManager] : Command manager destroyed." << std::endl;
 
 
 	// Desaloca em ordem inversa de criação para evitar o uso de recursos já destruídos.
-    if (graphicsPipeline != VK_NULL_HANDLE || graphicsPipelineLayout != VK_NULL_HANDLE) {
-        PipelineManager::destroy(device, graphicsPipeline, graphicsPipelineLayout);
-    }
+	if (graphicsPipeline != VK_NULL_HANDLE || graphicsPipelineLayout != VK_NULL_HANDLE) {
+		PipelineManager::destroy(device, graphicsPipeline, graphicsPipelineLayout);
+	}
 
     // O Swapchain e seus framebuffers dependem do RenderPass, então devem ser destruídos antes.
     swapchainManager.reset();

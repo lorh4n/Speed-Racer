@@ -41,6 +41,11 @@ private:
     std::unique_ptr<CommandManager> commandManager;
     std::vector<VkCommandBuffer> commandBuffers;
 
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    VkFence inFlightFence;
+
+
 
 
     void initVulkan();
@@ -56,6 +61,8 @@ private:
     void createCommandPool();
     void createCommandBuffers();
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void drawFrame();
+    void createSyncObjects();
 
     void cleanup();
 };

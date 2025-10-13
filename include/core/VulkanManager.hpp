@@ -39,7 +39,14 @@ private:
     VkPipelineLayout graphicsPipelineLayout;
     VkPipeline graphicsPipeline;
     std::unique_ptr<CommandManager> commandManager;
-    std::vector<VkCommandBuffer> commandBuffers;    
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+    uint32_t currentFrame = 0;
 
 
     void initVulkan();
@@ -53,7 +60,10 @@ private:
     void createGraphicsPipeline();
     void createFramebuffers();
     void createCommandPool();
-    void createCommandBuffers();    
+    void createCommandBuffers();
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void drawFrame();
+    void createSyncObjects();
 
     void cleanup();
 };

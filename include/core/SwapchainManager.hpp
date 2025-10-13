@@ -43,6 +43,8 @@ class SwapchainManager {
 
 	VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
 
+	VkSwapchainKHR getSwapchain() const { return swapchain; }
+
 	// FrameBuffers Functions
 	bool createFramebuffers(VkRenderPass renderPass);
 	const std::vector<VkFramebuffer>& getFramebuffers() const {

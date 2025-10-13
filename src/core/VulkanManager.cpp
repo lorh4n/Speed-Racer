@@ -8,7 +8,9 @@ VulkanManager::VulkanManager(int width, int height, const char *title) :
     debugMessenger(VK_NULL_HANDLE),
     physicalDevice(VK_NULL_HANDLE),
     device(VK_NULL_HANDLE),
-    swapchainManager(nullptr) {
+    swapchainManager(nullptr), 
+	 commandManager(nullptr)
+	 {
     std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
 }
 
@@ -33,7 +35,21 @@ void VulkanManager::initVulkan() {
 	setupSwapChain();
 	createGraphicsPipeline();
 	createFramebuffers();
+	createCommandPool();      // ← ADICIONE
+	createCommandBuffers();
     std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
+}
+
+void VulkanManager::createCommandPool() {
+    commandManager = std::make_unique<CommandManager>(device, queueManager);
+    commandManager->createCommandPool();
+    std::cout << "[VulkanManager] : Command pool setup complete." << std::endl;
+}
+
+void VulkanManager::createCommandBuffers() {
+    size_t framebufferCount = swapchainManager->getFramebuffers().size();
+    commandBuffers = commandManager->allocateCommandBuffers(framebufferCount);
+    std::cout << "[VulkanManager] : Command buffers created." << std::endl;
 }
 
 void VulkanManager::createFramebuffers() {
@@ -134,6 +150,12 @@ void VulkanManager::mainLoop() {
 
 void VulkanManager::cleanup() {
     std::cout << "[VulkanManager] : Starting cleanup..." << std::endl;
+
+
+    // Command manager limpa automaticamente o pool e buffers
+    commandManager.reset();
+    std::cout << "[VulkanManager] : Command manager destroyed." << std::endl;
+
 
 	// Desaloca em ordem inversa de criação para evitar o uso de recursos já destruídos.
     if (graphicsPipeline != VK_NULL_HANDLE || graphicsPipelineLayout != VK_NULL_HANDLE) {

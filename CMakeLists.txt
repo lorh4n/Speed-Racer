@@ -20,6 +20,7 @@ add_executable(Speed_Racer
    src/core/ShaderManager.cpp
    src/core/PipelineManager.cpp
    src/core/RenderPassManager.cpp
+   src/core/CommandManager.cpp
 )
 
 target_include_directories(Speed_Racer PRIVATE 

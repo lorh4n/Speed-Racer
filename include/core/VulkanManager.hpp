@@ -39,7 +39,8 @@ private:
     VkPipelineLayout graphicsPipelineLayout;
     VkPipeline graphicsPipeline;
     std::unique_ptr<CommandManager> commandManager;
-    std::vector<VkCommandBuffer> commandBuffers;    
+    std::vector<VkCommandBuffer> commandBuffers;
+
 
 
     void initVulkan();
@@ -53,7 +54,8 @@ private:
     void createGraphicsPipeline();
     void createFramebuffers();
     void createCommandPool();
-    void createCommandBuffers();    
+    void createCommandBuffers();
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void cleanup();
 };

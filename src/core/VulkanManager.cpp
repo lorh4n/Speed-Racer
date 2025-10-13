@@ -40,6 +40,63 @@ void VulkanManager::initVulkan() {
     std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
 
+void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;
+	beginInfo.pInheritanceInfo = nullptr;
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+		throw std::runtime_error("[VulkanManager] : Failed to begin recording command buffer!");
+	}
+
+
+	// Começar RenderPass
+
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass;
+	renderPassInfo.framebuffer = swapchainManager->getFramebuffers()[imageIndex];
+	renderPassInfo.renderArea.offset = {0, 0};
+	renderPassInfo.renderArea.extent = swapchainManager->getSwapchainExtent();
+
+	VkClearValue clearColor = {{{0.2f, 0.2f, 0.2f, 1.0f}}};
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	// Bind Pipeline
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+
+	// Configurar viewport e scissor (dinâmicos)
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(swapchainManager->getSwapchainExtent().width);
+	viewport.height = static_cast<float>(swapchainManager->getSwapchainExtent().height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+	VkRect2D scissor{};
+	scissor.offset = {0, 0};
+	scissor.extent = swapchainManager->getSwapchainExtent();
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	// Draw (3 vertices)
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+	vkCmdEndRenderPass(commandBuffer);
+
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("[VulkanManager] : Failed to record command buffer!");
+	}
+	
+	std::cout << "[VulkanManager] : Command buffer recorded for image " << imageIndex << std::endl;
+}
+
 void VulkanManager::createCommandPool() {
     commandManager = std::make_unique<CommandManager>(device, queueManager);
     commandManager->createCommandPool();
@@ -49,7 +106,13 @@ void VulkanManager::createCommandPool() {
 void VulkanManager::createCommandBuffers() {
     size_t framebufferCount = swapchainManager->getFramebuffers().size();
     commandBuffers = commandManager->allocateCommandBuffers(framebufferCount);
-    std::cout << "[VulkanManager] : Command buffers created." << std::endl;
+    
+    // Gravar cada command buffer
+    for (size_t i = 0; i < commandBuffers.size(); i++) {
+        recordCommandBuffer(commandBuffers[i], i);
+    }
+    
+    std::cout << "[VulkanManager] : Command buffers created and recorded." << std::endl;
 }
 
 void VulkanManager::createFramebuffers() {

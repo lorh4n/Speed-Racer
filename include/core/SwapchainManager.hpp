@@ -26,7 +26,8 @@ class SwapchainManager {
 	bool createSwapchain(uint32_t width, uint32_t height);
 	bool createImageViews();
 	void cleanup();
-	// void recreateSwapchain(uint32_t width, uint32_t height);
+	void cleanupSwapchain();
+	void recreateSwapchain(uint32_t width, uint32_t height);
 
 	static bool checkDeviceSupportSwapChain(VkPhysicalDevice device);
 

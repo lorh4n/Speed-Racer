@@ -201,18 +201,8 @@ bool SwapchainManager::createImageViews() {
 }
 
 void SwapchainManager::cleanup() {
-
-	for (auto framebuffer : swapchainFramebuffers) {
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	}
-	for (auto imageView : swapchainImageViews) {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-    // --------------------------
-
-	if (swapchain != VK_NULL_HANDLE) {
-		vkDestroySwapchainKHR(device, swapchain, nullptr);
-	}
+	std::cout << "[SwapchainManager] : Final cleanup..." << std::endl;
+	cleanupSwapchain();
 }
 
 
@@ -243,6 +233,45 @@ bool SwapchainManager::createFramebuffers(VkRenderPass renderPass) {
 	}
 	std::cout << "[SwapchainManager] : Framebuffers created successfully! (" << swapchainFramebuffers.size() << " framebuffers)" << std::endl;
    return true;
+}
 
 
+void SwapchainManager::cleanupSwapchain() {
+	std::cout << "[SwapchainManager] : Cleaning up swapchain resources..." << std::endl;
+
+	for (auto framebuffer : swapchainFramebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
+	swapchainFramebuffers.clear();
+	std::cout << "\t [SwapchainManager] : Framebuffers destroyed." << std::endl;
+
+	for (auto imageView : swapchainImageViews) {
+		vkDestroyImageView(device, imageView, nullptr);
+	}
+
+	swapchainImageViews.clear();
+	std::cout << "\t [SwapchainManager] : Image views destroyed." << std::endl;
+
+	if (swapchain != VK_NULL_HANDLE) {
+		vkDestroySwapchainKHR(device, swapchain, nullptr);
+		swapchain = VK_NULL_HANDLE;
+		std::cout << "[SwapchainManager] : Swapchain destroyed." << std::endl;
+	}
+}
+
+void SwapchainManager::recreateSwapchain(uint32_t width, uint32_t height) {
+	std::cout << "[SwapchainManager] : Recreating swapchain..." << std::endl;
+
+	vkDeviceWaitIdle(device); // Wait for device to finish operations
+
+	// Clean up old resources
+	cleanupSwapchain();
+    
+	// Recreate swapchain and dependent resources
+	createSwapchain(width, height);
+	createImageViews();
+	// Note: Framebuffers will be recreated by VulkanManager
+
+	std::cout << "\t [SwapchainManager] : Swapchain recreation complete." << std::endl;
 }

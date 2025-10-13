@@ -33,6 +33,8 @@ public:
     // Get required Vulkan instance extensions for GLFW
     std::vector<const char*> getRequiredExtensions() const;
 
+    void setFramebufferResizeCallback(GLFWframebuffersizefun callback);
+
 private:
     GLFWwindow* window;
     int width;

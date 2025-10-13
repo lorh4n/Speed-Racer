@@ -2,16 +2,23 @@
 #include <core/RenderPassManager.hpp>
 
 VulkanManager::VulkanManager(int width, int height, const char *title) :
-    window(width, height, title),
-    instance(VK_NULL_HANDLE),
-    surface(VK_NULL_HANDLE),
-    debugMessenger(VK_NULL_HANDLE),
-    physicalDevice(VK_NULL_HANDLE),
-    device(VK_NULL_HANDLE),
-    swapchainManager(nullptr), 
-	 commandManager(nullptr)
-	 {
-    std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
+    	window(width, height, title),
+    	instance(VK_NULL_HANDLE),
+    	surface(VK_NULL_HANDLE),
+    	debugMessenger(VK_NULL_HANDLE),
+    	physicalDevice(VK_NULL_HANDLE),
+    	device(VK_NULL_HANDLE),
+    	swapchainManager(nullptr), 
+	 	commandManager(nullptr),
+		framebufferResized(false) 
+	{
+	std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
+
+	// Set user pointer so callback can access this instance
+	glfwSetWindowUserPointer(window.getWindow(), this);
+	
+	// Set framebuffer resize callback
+	window.setFramebufferResizeCallback(framebufferResizeCallback);
 }
 
 VulkanManager::~VulkanManager() {
@@ -41,51 +48,111 @@ void VulkanManager::initVulkan() {
     std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
 
+void VulkanManager::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+	
+	// Retrieve the VulkanManager instance from the window user pointer
+	auto app = reinterpret_cast<VulkanManager*>(glfwGetWindowUserPointer(window));
+    
+	if (app) {
+		app->framebufferResized = true;
+		std::cout << "[VulkanManager] : Framebuffer resized to " << width << "x" << height << std::endl;
+	}
+}
+
+void VulkanManager::recreateSwapChain() {
+	std::cout << "[VulkanManager] : Recreating swap chain..." << std::endl;
+
+	int width = 0;
+	int height = 0;
+	glfwGetFramebufferSize(window.getWindow(), &width, &height);
+
+	while (width == 0 || height == 0) {
+		glfwGetFramebufferSize(window.getWindow(), &width, &height);
+		glfwWaitEvents();
+	}
+
+	vkDeviceWaitIdle(device);
+
+	swapchainManager->recreateSwapchain(width, height);
+
+	createFramebuffers();
+
+	std::cout << "[VulkanManager] : Swap chain recreation complete." << std::endl;
+}
+
 void VulkanManager::drawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-    uint32_t imageIndex;
-    vkAcquireNextImageKHR(device, swapchainManager->getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	uint32_t imageIndex;
+	VkResult result = vkAcquireNextImageKHR(
+		device,
+		swapchainManager->getSwapchain(), 
+		UINT64_MAX, 
+		imageAvailableSemaphores[currentFrame], 
+		VK_NULL_HANDLE, 
+		&imageIndex
+	);
 
-    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-    recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		std::cout << "[VulkanManager] : Swapchain out of date, recreating..." << std::endl;
+		recreateSwapChain();
+		return;  // Try again next frame
+	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		
+		throw std::runtime_error("[VulkanManager] : Failed to acquire swap chain image!");
+	}
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+	//  vkAcquireNextImageKHR(device, swapchainManager->getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+	vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
-    if (vkQueueSubmit(queues.graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-    VkSwapchainKHR swapChains[] = {swapchainManager->getSwapchain()};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
 
-    presentInfo.pImageIndices = &imageIndex;
+	if (vkQueueSubmit(queues.graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit draw command buffer!");
+	}
 
-    vkQueuePresentKHR(queues.presentQueue, &presentInfo);
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	VkSwapchainKHR swapChains[] = {swapchainManager->getSwapchain()};
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+
+	presentInfo.pImageIndices = &imageIndex;
+
+	result = vkQueuePresentKHR(queues.presentQueue, &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+		framebufferResized = false;
+		std::cout << "[VulkanManager] : Swapchain suboptimal or resized, recreating..." << std::endl;
+		recreateSwapChain();
+	} else if (result != VK_SUCCESS) {
+		throw std::runtime_error("[VulkanManager] : Failed to present swap chain image!");
+	}
+
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VulkanManager::createSyncObjects() {

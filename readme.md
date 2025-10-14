@@ -1,4 +1,816 @@
+# 🏎️ Speed Racer Engine - Development Roadmap v2.0 (REVISADO)
+
+```
+   _____ ____  ________________     ____  ___   ____________ 
+  / ___// __ \/ ____/ ____/ __ \   / __ \/   | / ____/ ____/ 
+  \__ \/ /_/ / __/ / __/ / / / /  / /_/ / /| |/ /   / __/    
+ ___/ / ____/ /___/ /___/ /_/ /  / _, _/ ___ / /___/ /___    
+/____/_/   /_____/_____/_____/  /_/ |_/_/  |_\____/_____/    
+                                                              
+         🏁 VULKAN GAME ENGINE ROADMAP (REVISADO) 🏁
+```
+
+---
+
+## 📝 REVISÃO CRÍTICA E AJUSTES
+
+### ✅ O que foi mantido (estava bom)
+- Diagnóstico do problema arquitetural (god-object VulkanManager)
+- Divisão em semanas com entregáveis concretos
+- Checklists detalhados por dia
+- Sequência gráfico → dados → câmera → profundidade → modelos
+
+### 🔄 MUDANÇAS CRÍTICAS APLICADAS
+
+#### 1. **❌ SINGLETONS REMOVIDOS → ✅ DEPENDENCY INJECTION**
 ```cpp
+// ❌ ANTES (Singleton):
+auto& resources = ResourceManager::getInstance();
+
+// ✅ AGORA (Injeção de Dependência):
+class VulkanManager {
+    ResourceManager resourceManager;     // Owned instance
+    BufferManager bufferManager;
+    AssetManager assetManager;
+};
+
+// Passar referências explícitas
+bufferManager.initialize(device, resourceManager);
+```
+
+**Razão:** Singletons criam acoplamento oculto e dificultam testes. Injeção explícita é mais flexível.
+
+#### 2. **🆕 VULKAN MEMORY ALLOCATOR (VMA) OBRIGATÓRIO**
+```cpp
+// Adicionar LOGO no Dia 1-2 da Semana 1
+VmaAllocator allocator;  // Substitui gerenciamento manual de VkDeviceMemory
+```
+
+**Razão:** Gerenciar memória Vulkan manualmente é complexo e propenso a erros. VMA resolve subalocação, mapeamento e performance.
+
+#### 3. **🆕 SHADER TOOLCHAIN NO CMAKE**
+```cmake
+# CMakeLists.txt - Adicionar target de shaders
+add_custom_target(compile_shaders ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUTPUT_DIR}
+    COMMAND glslc ${SHADER_SOURCE} -o ${SHADER_OUTPUT}
+    DEPENDS ${SHADER_SOURCES}
+)
+add_dependencies(Speed_Racer compile_shaders)
+```
+
+**Razão:** Shaders devem ser versionados e compilados automaticamente no build.
+
+#### 4. **🆕 FRAMES-IN-FLIGHT VALIDADO FORMALMENTE**
+```cpp
+// Critério de aceite: DEVE funcionar com 2-3 frames in flight sem deadlocks
+const int MAX_FRAMES_IN_FLIGHT = 2;  // Já existe
+// + Validação explícita de swapchain recreation
+```
+
+#### 5. **🆕 SCENE GRAPH BÁSICO ANTECIPADO (Semana 2)**
+```cpp
+// Introduzir APÓS Vertex/Index Buffers
+struct SceneNode {
+    Transform transform;
+    Renderable* renderable;  // nullptr se não renderiza
+    std::vector<SceneNode*> children;
+};
+```
+
+**Razão:** Evita retrabalho ao migrar de "desenhar N objetos" para "iterar cena".
+
+#### 6. **🆕 MINI FRAMEGRAPH (Semana 2)**
+```cpp
+// Estrutura simples de passes
+struct RenderPass {
+    std::string name;
+    std::function<void(VkCommandBuffer)> execute;
+    std::vector<std::string> dependencies;
+};
+```
+
+**Razão:** Facilita adicionar sombras/pós-processamento sem reescrever loop de render.
+
+---
+
+## 🗺️ ROADMAP REVISADO (4 Semanas + Futuro)
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║         FASE 1: FUNDAÇÃO ARQUITETURAL (SEMANA 1)            ║
+║                    🏗️ 5-6 DIAS                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### 📅 SEMANA 1: Core Engine Architecture (REVISADO)
+
+#### 🎯 Objetivo
+Criar infraestrutura robusta com gerenciamento de memória profissional e build system completo.
+
+---
+
+#### **DIA 1-2: Memory Management + Resource System** ⏱️ 14-18h
+
+##### 📋 Tarefas (REORDENADAS)
+
+**1. Integrar Vulkan Memory Allocator (VMA)** 🆕
+```cpp
+// PRIORIDADE MÁXIMA - Fazer ANTES de BufferManager
+```
+
+**Checklist:**
+- [ ] Adicionar VMA ao projeto (git submodule ou download)
+- [ ] Atualizar CMakeLists.txt com VMA
+- [ ] Criar `VmaAllocator` em `VulkanManager::initVulkan()`
+- [ ] Implementar wrapper `VmaBuffer` (VkBuffer + VmaAllocation)
+- [ ] Testar criação/destruição de buffer simples
+- [ ] Validar com Validation Layers
+
+**Arquivos:**
+```
+libs/VulkanMemoryAllocator/  (submodule ou source)
+include/core/VmaWrapper.hpp
+src/core/VmaWrapper.cpp
+```
+
+---
+
+**2. ResourceManager (COM INJEÇÃO, NÃO SINGLETON)** 🔄
+
+```cpp
+// Estrutura Mental (SEM getInstance()):
+class ResourceManager {
+public:
+    ResourceManager(VkDevice device, VmaAllocator allocator);
+    
+    // Handle-based API (não expõe VkBuffer diretamente)
+    BufferHandle createBuffer(const BufferCreateInfo& info);
+    void destroyBuffer(BufferHandle handle);
+    VkBuffer getVkBuffer(BufferHandle handle) const;
+    
+private:
+    VkDevice device;
+    VmaAllocator allocator;
+    std::unordered_map<BufferHandle, VmaBuffer> buffers;
+    HandleAllocator<BufferHandle> handleGen;
+};
+```
+
+**Checklist:**
+- [ ] Criar `ResourceManager.hpp/cpp` (instância normal, NÃO singleton)
+- [ ] Implementar `Handle` types (`BufferHandle`, `ImageHandle`)
+- [ ] Criar `HandleAllocator` template (gera IDs únicos)
+- [ ] Registry de recursos com handles
+- [ ] Métodos `create/destroy/get` para buffers
+- [ ] RAII wrappers (`ScopedBuffer`, `ScopedImage`)
+- [ ] Logging de lifecycle
+- [ ] Testes unitários (criar 100 buffers, verificar cleanup)
+
+**Arquivos:**
+```
+include/core/ResourceManager.hpp
+src/core/ResourceManager.cpp
+include/core/Handle.hpp  (templates)
+include/core/ResourceTypes.hpp
+```
+
+**Exemplo de Uso:**
+```cpp
+// ❌ ANTES (Singleton):
+auto& rm = ResourceManager::getInstance();
+
+// ✅ AGORA (Injeção):
+class VulkanManager {
+    ResourceManager resourceManager;  // Owned
+public:
+    VulkanManager() : resourceManager(device, vmaAllocator) {}
+};
+```
+
+---
+
+**3. BufferManager (usando VMA + ResourceManager)**
+
+```cpp
+class BufferManager {
+public:
+    BufferManager(VkDevice device, 
+                  VmaAllocator allocator,
+                  ResourceManager& resources,  // Injeção!
+                  CommandManager& commands);
+    
+    BufferHandle createVertexBuffer(const void* data, size_t size);
+    BufferHandle createIndexBuffer(const void* data, size_t size);
+    BufferHandle createUniformBuffer(size_t size);
+    
+    void uploadToBuffer(BufferHandle handle, const void* data, size_t size);
+private:
+    VmaAllocator allocator;
+    ResourceManager& resources;
+    CommandManager& commands;
+};
+```
+
+**Checklist:**
+- [ ] Criar `BufferManager.hpp/cpp`
+- [ ] Implementar `createBuffer()` usando VMA
+- [ ] Staging buffer automático (VMA_MEMORY_USAGE_CPU_TO_GPU)
+- [ ] `copyBuffer()` com command buffer one-time-submit
+- [ ] `mapBuffer/unmapBuffer` helpers
+- [ ] Integração com ResourceManager (retorna handles)
+- [ ] Testes: vertex buffer, index buffer, staging
+
+**Métricas de Sucesso Dia 1-2:**
+- ✅ VMA integrado e funcionando
+- ✅ BufferManager cria staging + device buffer via VMA
+- ✅ ResourceManager rastreia buffers com handles
+- ✅ Código existente (triângulo) ainda compila
+- ✅ **Nenhum memory leak detectado** (Validation Layers)
+
+---
+
+#### **DIA 3: Shader Build System + PipelineBuilder** ⏱️ 8-10h
+
+##### 📋 Tarefas (ORDEM REVISADA)
+
+**1. Shader Toolchain no CMake** 🆕
+
+**Checklist:**
+- [ ] Criar `cmake/CompileShaders.cmake`
+- [ ] Detectar `glslc` (Vulkan SDK)
+- [ ] Adicionar função `compile_shader(SOURCE OUTPUT)`
+- [ ] Target `compile_shaders` que compila todos os .vert/.frag
+- [ ] Adicionar dependência: `Speed_Racer` depende de `compile_shaders`
+- [ ] Testar: modificar shader → rebuild → .spv atualizado
+- [ ] Gerar arquivo de manifesto (JSON) com bindings/locations 🆕
+
+**Arquivos:**
+```
+cmake/CompileShaders.cmake
+assets/shaders/CMakeLists.txt
+assets/shaders/manifest.json (gerado)
+```
+
+**CMakeLists.txt:**
+```cmake
+include(cmake/CompileShaders.cmake)
+
+file(GLOB_RECURSE SHADER_SOURCES 
+    "assets/shaders/*.vert"
+    "assets/shaders/*.frag"
+)
+
+foreach(SHADER ${SHADER_SOURCES})
+    get_filename_component(SHADER_NAME ${SHADER} NAME)
+    compile_shader(
+        SOURCE ${SHADER}
+        OUTPUT ${CMAKE_BINARY_DIR}/shaders/${SHADER_NAME}.spv
+    )
+endforeach()
+```
+
+---
+
+**2. PipelineBuilder (COM REFLECTION BÁSICA)** 🔄
+
+```cpp
+class PipelineBuilder {
+public:
+    PipelineBuilder(VkDevice device, ResourceManager& resources);
+    
+    // Carrega automaticamente reflection data
+    PipelineBuilder& addShader(VkShaderStageFlagBits stage, 
+                               const std::string& path);
+    
+    // Configurações fluentes
+    PipelineBuilder& setVertexInput(const VertexInputDescription& desc);
+    PipelineBuilder& setTopology(VkPrimitiveTopology topology);
+    PipelineBuilder& setViewport(VkExtent2D extent);
+    PipelineBuilder& setRasterizer(VkPolygonMode mode, VkCullModeFlags cull);
+    PipelineBuilder& setBlending(BlendMode mode);
+    PipelineBuilder& setRenderPass(VkRenderPass renderPass);
+    
+    // Build retorna handle
+    PipelineHandle build();
+    
+private:
+    VkDevice device;
+    ResourceManager& resources;
+    ShaderReflection reflection;  // 🆕 Lê manifest.json
+};
+```
+
+**Checklist:**
+- [ ] Criar `PipelineBuilder.hpp/cpp`
+- [ ] Parser de `manifest.json` → `ShaderReflection`
+- [ ] Métodos fluentes (retornam `*this`)
+- [ ] Validação de estado no `build()`
+- [ ] Integração com ResourceManager (retorna PipelineHandle)
+- [ ] Presets: `createBasicPipeline()`, `createWireframePipeline()`
+
+**Métricas de Sucesso Dia 3:**
+- ✅ Shaders compilam automaticamente no build
+- ✅ PipelineBuilder cria pipeline com reflection
+- ✅ Múltiplos pipelines facilmente criados
+- ✅ Validação detecta configurações faltando
+
+---
+
+#### **DIA 4: Asset Management (SEM SINGLETON)** ⏱️ 6-8h
+
+```cpp
+class AssetManager {
+public:
+    AssetManager();
+    
+    void setBaseDirectory(const std::string& base);
+    void setShaderDirectory(const std::string& dir);
+    void setTextureDirectory(const std::string& dir);
+    void setModelDirectory(const std::string& dir);
+    
+    std::string resolveShaderPath(const std::string& filename) const;
+    std::string resolveTexturePath(const std::string& filename) const;
+    std::string resolveModelPath(const std::string& filename) const;
+    
+    bool fileExists(const std::string& path) const;
+    
+private:
+    std::filesystem::path basePath;
+    std::filesystem::path shaderDir;
+    std::filesystem::path textureDir;
+    std::filesystem::path modelDir;
+};
+```
+
+**Checklist:**
+- [ ] Criar `AssetManager.hpp/cpp` (instância normal)
+- [ ] Path resolution com `std::filesystem`
+- [ ] Validação de existência de arquivos
+- [ ] Logging de assets carregados
+- [ ] Config file (YAML/JSON) para diretórios 🆕
+- [ ] Testes: resolve paths, detecta arquivos faltando
+
+**Config File (config.json):** 🆕
+```json
+{
+  "assets": {
+    "base": "assets",
+    "shaders": "shaders/compiled",
+    "textures": "textures",
+    "models": "models"
+  }
+}
+```
+
+---
+
+#### **DIA 5: Frames-in-Flight + Swapchain Validation** ⏱️ 8-10h 🆕
+
+##### 📋 Tarefas (FORMALIZAÇÃO)
+
+**Checklist:**
+- [ ] Validar que `MAX_FRAMES_IN_FLIGHT = 2` funciona perfeitamente
+- [ ] Adicionar teste: `MAX_FRAMES_IN_FLIGHT = 3` (deve funcionar)
+- [ ] Testar swapchain recreation 10x seguidas (resize rápido)
+- [ ] Testar minimização → restauração
+- [ ] Adicionar timestamp queries (CPU/GPU time) 🆕
+- [ ] Implementar debug markers (VkDebugUtilsLabel) 🆕
+- [ ] Validar com RenderDoc (capturar frame)
+
+**Arquivos:**
+```
+include/core/DebugUtils.hpp  🆕
+src/core/DebugUtils.cpp
+```
+
+**Debug Markers:**
+```cpp
+void beginDebugLabel(VkCommandBuffer cmd, const char* name, glm::vec4 color);
+void endDebugLabel(VkCommandBuffer cmd);
+
+// Uso:
+beginDebugLabel(cmd, "Draw Triangle", {1, 0, 0, 1});
+vkCmdDraw(...);
+endDebugLabel(cmd);
+```
+
+---
+
+#### **DIA 6: Integração + Refatoração Final** ⏱️ 8-10h
+
+**Checklist:**
+- [ ] Refatorar VulkanManager para usar DI (não singletons)
+- [ ] Passar referências explícitas entre managers
+- [ ] Atualizar createGraphicsPipeline() com PipelineBuilder
+- [ ] Remover todo código duplicado
+- [ ] Adicionar sanitizers (ASan, UBSan) 🆕
+- [ ] Configurar CI básico (GitHub Actions) 🆕
+- [ ] Validar triângulo renderiza perfeitamente
+- [ ] Documentação completa
+
+**CI Config (.github/workflows/build.yml):** 🆕
+```yaml
+name: Build and Test
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Vulkan SDK
+        run: sudo apt-get install vulkan-sdk
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build
+      - name: Run Tests
+        run: ./build/Speed_Racer --test
+```
+
+**Métricas de Sucesso Semana 1:**
+- ✅ VMA integrado
+- ✅ DI ao invés de singletons
+- ✅ Shaders compilam no CMake
+- ✅ PipelineBuilder com reflection
+- ✅ Frames-in-flight validado
+- ✅ CI funcionando
+- ✅ **Zero warnings, zero memory leaks**
+
+---
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║    FASE 2: GEOMETRIA REAL + SCENE GRAPH (SEMANA 2)         ║
+║                    🎨 4-5 DIAS                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### 📅 SEMANA 2: Real Geometry + Minimal Scene (REVISADO)
+
+#### 🎯 Objetivo
+Vertex/Index buffers + **Scene Graph mínimo** + **Mini FrameGraph**.
+
+---
+
+#### **DIA 1-2: Vertex + Index Buffers** ⏱️ 12-14h
+
+**Checklist:**
+- [ ] Criar struct `Vertex` (pos, color, normal, UV)
+- [ ] `getBindingDescription()` e `getAttributeDescriptions()`
+- [ ] Usar BufferManager para criar vertex buffer (VMA)
+- [ ] Criar index buffer
+- [ ] Atualizar PipelineBuilder com vertex input
+- [ ] Modificar shaders para input attributes
+- [ ] `vkCmdBindVertexBuffers` + `vkCmdBindIndexBuffer`
+- [ ] `vkCmdDrawIndexed()` ao invés de `vkCmdDraw()`
+- [ ] Testar cubo (8 vértices, 36 índices)
+
+**Definição de Done:** 🆕
+- ✅ Cubo renderizado com 8 vértices (não 36)
+- ✅ Index buffer reduz memória vs vertex buffer puro
+- ✅ Sem memory leaks (Valgrind)
+
+---
+
+#### **DIA 3: Scene Graph Mínimo + Transform** ⏱️ 8-10h 🆕
+
+**Estrutura:**
+```cpp
+struct Transform {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::quat rotation = glm::quat(1, 0, 0, 0);
+    glm::vec3 scale = glm::vec3(1.0f);
+    
+    glm::mat4 getMatrix() const;
+    glm::mat4 getWorldMatrix(const Transform* parent = nullptr) const;
+};
+
+struct Renderable {
+    BufferHandle vertexBuffer;
+    BufferHandle indexBuffer;
+    uint32_t indexCount;
+    PipelineHandle pipeline;
+};
+
+class SceneNode {
+public:
+    std::string name;
+    Transform transform;
+    Renderable* renderable = nullptr;  // nullptr se não renderiza
+    
+    std::vector<SceneNode*> children;
+    SceneNode* parent = nullptr;
+    
+    void addChild(SceneNode* child);
+    void removeChild(SceneNode* child);
+    glm::mat4 getWorldTransform() const;
+};
+
+class Scene {
+public:
+    SceneNode* createNode(const std::string& name);
+    void destroyNode(SceneNode* node);
+    SceneNode* getRootNode() { return &root; }
+    
+    void traverse(std::function<void(SceneNode*)> visitor);
+    
+private:
+    SceneNode root;
+    std::vector<std::unique_ptr<SceneNode>> nodes;
+};
+```
+
+**Checklist:**
+- [ ] Criar `Transform.hpp/cpp`
+- [ ] Criar `SceneNode.hpp/cpp`
+- [ ] Criar `Scene.hpp/cpp`
+- [ ] Implementar `traverse()` (depth-first)
+- [ ] Refatorar render loop para iterar Scene
+- [ ] Criar 2-3 nós com transforms diferentes
+- [ ] Testar hierarquia pai/filho (cubo + filho rotacionando)
+
+**Arquivos:**
+```
+include/scene/Transform.hpp
+include/scene/SceneNode.hpp
+include/scene/Scene.hpp
+src/scene/Transform.cpp
+src/scene/SceneNode.cpp
+src/scene/Scene.cpp
+```
+
+---
+
+#### **DIA 4: Mini FrameGraph** ⏱️ 8-10h 🆕
+
+**Estrutura:**
+```cpp
+struct RenderPassInfo {
+    std::string name;
+    VkRenderPass renderPass;
+    VkFramebuffer framebuffer;
+    VkExtent2D extent;
+    std::vector<VkClearValue> clearValues;
+};
+
+class FrameGraph {
+public:
+    using ExecuteFunc = std::function<void(VkCommandBuffer, const RenderPassInfo&)>;
+    
+    struct Pass {
+        std::string name;
+        RenderPassInfo passInfo;
+        ExecuteFunc execute;
+        std::vector<std::string> dependencies;
+    };
+    
+    void addPass(const std::string& name, 
+                 const RenderPassInfo& info,
+                 ExecuteFunc func,
+                 const std::vector<std::string>& deps = {});
+    
+    void compile();  // Ordena passes por dependências
+    void execute(VkCommandBuffer cmd);
+    
+private:
+    std::vector<Pass> passes;
+    std::vector<Pass*> sortedPasses;  // Ordenado topologicamente
+};
+```
+
+**Checklist:**
+- [ ] Criar `FrameGraph.hpp/cpp`
+- [ ] Implementar topological sort simples
+- [ ] Adicionar 2 passes: "ForwardPass", "UIPass"
+- [ ] Refatorar `drawFrame()` para usar FrameGraph
+- [ ] Validar ordem de execução
+- [ ] Adicionar debug labels por pass
+
+**Exemplo de Uso:**
+```cpp
+frameGraph.addPass("Forward", forwardPassInfo, 
+    [this](VkCommandBuffer cmd, const RenderPassInfo& info) {
+        scene.traverse([&](SceneNode* node) {
+            if (node->renderable) {
+                // Bind pipeline, buffers, draw
+            }
+        });
+    });
+
+frameGraph.addPass("UI", uiPassInfo,
+    [this](VkCommandBuffer cmd, const RenderPassInfo& info) {
+        // Draw UI
+    }, 
+    {"Forward"});  // Depende de Forward
+
+frameGraph.compile();
+frameGraph.execute(commandBuffer);
+```
+
+**Definição de Done:** 🆕
+- ✅ 2 passes executam em ordem correta
+- ✅ Debug markers visíveis em RenderDoc
+- ✅ Fácil adicionar novos passes
+
+---
+
+#### **DIA 5: Advanced Geometry + Profiling** ⏱️ 8h
+
+**Checklist:**
+- [ ] Criar classe `Mesh` (vertices + indices encapsulados)
+- [ ] Geometria procedural: `createCube()`, `createSphere()`, `createPlane()`
+- [ ] Adicionar 10+ objetos na cena
+- [ ] Timestamp queries (GPU time por pass) 🆕
+- [ ] Performance profiling (RenderDoc/Tracy)
+- [ ] Otimizar: batch staging uploads
+
+**Definição de Done:** 🆕
+- ✅ 50+ objetos renderizados a 60+ FPS (1080p)
+- ✅ GPU time < 10ms por frame
+- ✅ Documentação de `Mesh` e `Scene`
+
+---
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║       FASE 3: UNIFORMS + TEXTURES + CAMERA (SEMANA 3)      ║
+║                    🌐 5-6 DIAS                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### 📅 SEMANA 3: Descriptors, Textures, Camera (MANTIDO COM AJUSTES)
+
+#### **DIA 1-2: Descriptor System + UBO** ⏱️ 12-14h
+
+**DescriptorManager (COM INJEÇÃO):**
+```cpp
+class DescriptorManager {
+public:
+    DescriptorManager(VkDevice device, ResourceManager& resources);
+    
+    DescriptorPoolHandle createPool(const PoolSizes& sizes, uint32_t maxSets);
+    DescriptorSetLayoutHandle createLayout(const std::vector<Binding>& bindings);
+    
+    std::vector<VkDescriptorSet> allocateSets(
+        DescriptorPoolHandle pool,
+        DescriptorSetLayoutHandle layout,
+        uint32_t count);
+    
+    void updateSet(VkDescriptorSet set, const std::vector<WriteDescriptor>& writes);
+    
+private:
+    VkDevice device;
+    ResourceManager& resources;
+};
+```
+
+**Checklist:**
+- [ ] Criar `DescriptorManager.hpp/cpp`
+- [ ] Struct `UniformBufferObject` (M, V, P matrices)
+- [ ] Criar UBO por frame in flight (BufferManager)
+- [ ] Descriptor pool + layout
+- [ ] Allocate descriptor sets (um por frame)
+- [ ] Update descriptor sets apontando para UBOs
+- [ ] Atualizar PipelineBuilder com descriptor layout
+- [ ] Shader com UBO: `layout(set=0, binding=0) uniform UBO { ... }`
+- [ ] Implementar rotação simples (modelo)
+- [ ] Testar transformações
+
+**Definição de Done:** 🆕
+- ✅ Cubo rotacionando suavemente
+- ✅ Múltiplos objetos com transforms independentes
+- ✅ Sem flickering ou race conditions
+
+---
+
+#### **DIA 3-4: Texture System** ⏱️ 14-16h
+
+**TextureManager:**
+```cpp
+class TextureManager {
+public:
+    TextureManager(VkDevice device, 
+                   VkPhysicalDevice physDevice,
+                   VmaAllocator allocator,
+                   ResourceManager& resources,
+                   CommandManager& commands);
+    
+    ImageHandle loadTexture(const std::string& path);
+    VkSampler createSampler(const SamplerCreateInfo& info);
+    
+private:
+    void createImage(const ImageCreateInfo& info);
+    void transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+};
+```
+
+**Checklist:**
+- [ ] Integrar stb_image
+- [ ] `loadTexture()` end-to-end (load → staging → device image → sampler)
+- [ ] Image layout transitions (barriers)
+- [ ] Mipmaps (opcional, mas recomendado)
+- [ ] Adicionar UV ao `Vertex`
+- [ ] Atualizar descriptor set (binding=1: sampler2D)
+- [ ] Shader textured: `texture(texSampler, fragTexCoord)`
+- [ ] Testar com textura checkerboard
+
+**Definição de Done:** 🆕
+- ✅ Textura aplicada corretamente (sem distorção)
+- ✅ Mipmaps funcionando (LOD visível ao afastar)
+- ✅ 5+ texturas diferentes carregadas
+
+---
+
+#### **DIA 5-6: Camera System** ⏱️ 10-12h
+
+**Camera:**
+```cpp
+class Camera {
+public:
+    void setPosition(const glm::vec3& pos);
+    void setRotation(float pitch, float yaw);
+    void setPerspective(float fov, float aspect, float near, float far);
+    
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getProjectionMatrix() const;
+    
+    void processInput(GLFWwindow* window, float deltaTime);
+    void processMouseMove(double xpos, double ypos);
+    
+private:
+    glm::vec3 position{0, 0, 3};
+    float pitch = 0.0f;
+    float yaw = -90.0f;
+    float fov = 45.0f;
+};
+```
+
+**Checklist:**
+- [ ] Criar `Camera.hpp/cpp`
+- [ ] `lookAt()` para view matrix
+- [ ] `perspective()` para projection
+- [ ] Input processing (WASD + mouse)
+- [ ] Atualizar UBO com camera matrices
+- [ ] Smooth movement (delta time)
+- [ ] Mouse capture (glfwSetInputMode)
+- [ ] Testar FPS camera
+
+**Definição de Done:** 🆕
+- ✅ Câmera FPS fluida (sem judder a 60+ FPS)
+- ✅ 6 DOF completo (WASD + mouse look)
+- ✅ Não trava ao mover rápido
+
+---
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║         FASE 4: DEPTH + MODEL LOADING (SEMANA 4)            ║
+║                    🗿 5-6 DIAS                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### 📅 SEMANA 4: Depth + Models (MANTIDO)
+
+#### **DIA 1-2: Depth Buffering** ⏱️ 12h
+
+**Checklist:**
+- [ ] Encontrar formato depth (VK_FORMAT_D32_SFLOAT)
+- [ ] Criar depth image (VMA)
+- [ ] Criar depth image view
+- [ ] Atualizar RenderPass (2 attachments: color + depth)
+- [ ] Configurar depth testing no pipeline
+- [ ] Atualizar framebuffers
+- [ ] Clear depth (1.0)
+- [ ] Testar geometria sobreposta
+
+**Definição de Done:** 🆕
+- ✅ Cubos sobrepostos renderizam corretamente
+- ✅ Z-fighting não aparece em objetos coincidentes
+- ✅ Depth buffer visível em RenderDoc
+
+---
+
+#### **DIA 3-5: Model Loading** ⏱️ 20-24h
+
+**ModelLoader:**
+```cpp
+class ModelLoader {
+public:
+    ModelLoader(BufferManager& buffers, TextureManager& textures, AssetManager& assets);
+    
+    std::unique_ptr<Model> loadModel(const std::string& path);
+    
+private:
+    struct LoadedMesh {
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        Material material;
+    };
+    
+    LoadedMesh processNode(aiNode* node, const aiScene* scene);
+};
 class Model {
 public:
     std::vector<Mesh> meshes;

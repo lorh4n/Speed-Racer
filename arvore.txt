@@ -48,17 +48,28 @@
 │       ├── 20250907-0047
 │       ├── 20250908-1107
 │       ├── 20251001-1431
+│       ├── 20251002-1850
+│       ├── 20251003-1141
+│       ├── 20251012-1347
+│       ├── 20251013-0051
+│       ├── 20251014-2000
 │       ├── TAG
 │       └── Temporary
 ├── CMakeLists.txt
 ├── docs
 │   ├── Diary.md
+│   ├── lixo.md
 │   └── UML
+├── generate_issues.sh
 ├── include
 │   └── core
+│       ├── CommandManager.hpp
 │       ├── logicalDevice.hpp
 │       ├── physicalDevice.hpp
+│       ├── PipelineManager.hpp
 │       ├── queueManager.hpp
+│       ├── RenderPassManager.hpp
+│       ├── ShaderManager.hpp
 │       ├── SwapchainManager.hpp
 │       ├── VulkanManager.hpp
 │       ├── VulkanUtils
@@ -104,13 +115,19 @@
 │       ├── LICENSE.txt
 │       └── misc
 ├── LICENSE
+├── readme.md
+├── resultado.md
 ├── src
 │   ├── app
 │   │   └── main.cpp
 │   └── core
+│       ├── CommandManager.cpp
 │       ├── logicalDevice.cpp
 │       ├── physicalDevice.cpp
+│       ├── PipelineManager.cpp
 │       ├── queueManager.cpp
+│       ├── RenderPassManager.cpp
+│       ├── ShaderManager.cpp
 │       ├── SwapchainManager.cpp
 │       ├── VulkanManager.cpp
 │       ├── VulkanTools
@@ -145,4 +162,4 @@
         ├── shader.vert
         └── vert.spv
 
-70 directories, 75 files
+75 directories, 87 files

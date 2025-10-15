@@ -6,12 +6,20 @@
 #include <iostream>
 #include <stdexcept>
 
+struct VmaBuffer { // Ela agrupa um buffer Vulkan com sua alocação de memória da VMA.
+   VkBuffer buffer;
+   VmaAllocation allocation;
+};
+
 class VmaWrapper {
 public: 
    VmaWrapper();
    ~VmaWrapper();
 
    void initialize(VkDevice device, VkPhysicalDevice physicalDevice, VkInstance instance);
+
+   VmaAllocator getAllocator() const { return allocator; }
+
 
    bool isInitialized() const { return allocator != VK_NULL_HANDLE; }
 private:

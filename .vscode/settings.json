@@ -102,6 +102,8 @@
       "typeindex": "cpp",
       "valarray": "cpp",
       "variant": "cpp",
-      "hash_map": "cpp"
+      "hash_map": "cpp",
+      "unordered_set": "cpp",
+      "shared_mutex": "cpp"
    }
 }

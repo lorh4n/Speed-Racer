@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -rf build/*
 
 # ...seu código aqui...
 cmake -S . -B build

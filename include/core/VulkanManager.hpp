@@ -16,6 +16,7 @@
 #include <core/ShaderManager.hpp>
 #include <core/PipelineManager.hpp>
 #include <core/CommandManager.hpp>
+#include <core/VmaWrapper.hpp>
 
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
@@ -49,6 +50,8 @@ private:
     uint32_t currentFrame = 0;
     bool framebufferResized = false;
 
+    VmaWrapper vmaWrapper;
+
 
     void initVulkan();
     void mainLoop();
@@ -65,6 +68,7 @@ private:
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void drawFrame();
     void createSyncObjects();
+    void setupVmaWrapper();
 
     void recreateSwapChain();
     void cleanup();

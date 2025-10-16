@@ -120,10 +120,10 @@ Criar infraestrutura robusta com gerenciamento de memória profissional e build 
 ```
 
 **Checklist:**
-- [ ] Adicionar VMA ao projeto (git submodule ou download)
-- [ ] Atualizar CMakeLists.txt com VMA
-- [ ] Criar `VmaAllocator` em `VulkanManager::initVulkan()`
-- [ ] Implementar wrapper `VmaBuffer` (VkBuffer + VmaAllocation)
+- [x] Adicionar VMA ao projeto (git submodule ou download)
+- [x] Atualizar CMakeLists.txt com VMA
+- [x] Criar `VmaAllocator` em `VulkanManager::initVulkan()`
+- [] Implementar wrapper `VmaBuffer` (VkBuffer + VmaAllocation)
 - [ ] Testar criação/destruição de buffer simples
 - [ ] Validar com Validation Layers
 
@@ -158,9 +158,9 @@ private:
 ```
 
 **Checklist:**
-- [ ] Criar `ResourceManager.hpp/cpp` (instância normal, NÃO singleton)
-- [ ] Implementar `Handle` types (`BufferHandle`, `ImageHandle`)
-- [ ] Criar `HandleAllocator` template (gera IDs únicos)
+- [x] Criar `ResourceManager.hpp/cpp` (instância normal, NÃO singleton)
+- [x] Implementar `Handle` types (`BufferHandle`, `ImageHandle`)
+- [x] Criar `HandleAllocator` template (gera IDs únicos)
 - [ ] Registry de recursos com handles
 - [ ] Métodos `create/destroy/get` para buffers
 - [ ] RAII wrappers (`ScopedBuffer`, `ScopedImage`)

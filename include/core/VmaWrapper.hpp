@@ -22,6 +22,9 @@ public:
 
 
    bool isInitialized() const { return allocator != VK_NULL_HANDLE; }
+
+   VmaBuffer createBuffer(const VkBufferCreateInfo& bufferInfo, const VmaAllocationCreateInfo& allocInfo);
+   void destroyBuffer(VmaBuffer& buffer);
 private:
    VmaAllocator allocator;
    VkDevice device;

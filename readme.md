@@ -123,9 +123,9 @@ Criar infraestrutura robusta com gerenciamento de memória profissional e build 
 - [x] Adicionar VMA ao projeto (git submodule ou download)
 - [x] Atualizar CMakeLists.txt com VMA
 - [x] Criar `VmaAllocator` em `VulkanManager::initVulkan()`
-- [] Implementar wrapper `VmaBuffer` (VkBuffer + VmaAllocation)
-- [ ] Testar criação/destruição de buffer simples
-- [ ] Validar com Validation Layers
+- [x] Implementar wrapper `VmaBuffer` (VkBuffer + VmaAllocation)
+- [x] Testar criação/destruição de buffer simples
+- [x] Validar com Validation Layers
 
 **Arquivos:**
 ```

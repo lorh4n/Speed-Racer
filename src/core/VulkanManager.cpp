@@ -377,10 +377,6 @@ void VulkanManager::cleanup() {
 		RenderPassManager::destroy(device, renderPass);
 		std::cout << "[VulkanManager] : Render pass destroyed." << std::endl;
 	}
-	if (renderPass != VK_NULL_HANDLE) {
-		vmaWrapper.~VmaWrapper();
-		std::cout << "[VulkanManager] : VmaWrapper destroyed." << std::endl;
-	}
 	if (device != VK_NULL_HANDLE) {
 		vkDestroyDevice(device, nullptr);
 		std::cout << "[VulkanManager] : Logical device destroyed." << std::endl;

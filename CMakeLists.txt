@@ -29,6 +29,7 @@ target_include_directories(Speed_Racer PRIVATE
    ${CMAKE_CURRENT_SOURCE_DIR}/include/VulkanUtils
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui
+   ${CMAKE_CURRENT_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
 )
 
 target_link_libraries(Speed_Racer 

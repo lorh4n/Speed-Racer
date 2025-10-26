@@ -30,11 +30,51 @@ void VmaWrapper::initialize(VkDevice device, VkPhysicalDevice physicalDevice, Vk
 }
 
 VmaWrapper::~VmaWrapper() {
+
    // TODO: O que fazer aqui?
+
    // Dica 1: Você precisa chamar vmaDestroyAllocator
+
    // Dica 2: E se initialize() nunca foi chamado?
+
   if (isInitialized()) {
+
       vmaDestroyAllocator(allocator);
+
       std::cout << "[VmaWrapper]: \t Allocator destroyed." << std::endl;
+
    }  
+
+}
+
+
+
+VmaBuffer VmaWrapper::createBuffer(const VkBufferCreateInfo& bufferInfo, const VmaAllocationCreateInfo& allocInfo) {
+
+    VmaBuffer vmaBuffer;
+
+    if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &vmaBuffer.buffer, &vmaBuffer.allocation, nullptr) != VK_SUCCESS) {
+
+        throw std::runtime_error("[VmaWrapper]: Failed to create buffer!");
+
+    }
+
+    return vmaBuffer;
+
+}
+
+
+
+void VmaWrapper::destroyBuffer(VmaBuffer& buffer) {
+
+    if (buffer.buffer != VK_NULL_HANDLE) {
+
+        vmaDestroyBuffer(allocator, buffer.buffer, buffer.allocation);
+
+        buffer.buffer = VK_NULL_HANDLE;
+
+        buffer.allocation = VK_NULL_HANDLE;
+
+    }
+
 }

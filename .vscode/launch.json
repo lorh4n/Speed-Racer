@@ -2,23 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Speed_Racer",
+            "name": "Debug Speed Racer",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Speed_Racer",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "VK_LAYER_PATH",
-                    "value": "/usr/share/vulkan/explicit_layer.d"
-                },
-                {
-                    "name": "VK_INSTANCE_LAYERS", 
-                    "value": "VK_LAYER_KHRONOS_validation"
-                }
-            ],
+            "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb",
@@ -29,14 +20,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Build and Configure",
-            "linux": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "/usr/bin/gdb"
-            },
-            "logging": {
-                "engineLogging": true
-            }
+            "preLaunchTask": "Build"
         }
     ]
 }

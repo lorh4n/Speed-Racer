@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/codebase.dir/code_base.cpp.o -o codebase  /usr/lib/x86_64-linux-gnu/libvulkan.so -lglfw -lGL -lX11 -lpthread -ldl 

@@ -22,6 +22,7 @@ add_executable(Speed_Racer
    src/core/RenderPassManager.cpp
    src/core/CommandManager.cpp
    src/core/VmaWrapper.cpp
+   src/core/ScopedBuffer.cpp
 )
 
 target_include_directories(Speed_Racer PRIVATE 

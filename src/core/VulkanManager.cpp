@@ -353,12 +353,15 @@ void VulkanManager::cleanup() {
 
 	vkDeviceWaitIdle(device);
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(device, inFlightFences[i], nullptr);
+	// Apenas destruir objetos de sincronização se eles foram criados
+	if (!renderFinishedSemaphores.empty()) {
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+			vkDestroyFence(device, inFlightFences[i], nullptr);
+		}
+		std::cout << "[VulkanManager] : Synchronization objects destroyed." << std::endl;
 	}
-	std::cout << "[VulkanManager] : Synchronization objects destroyed." << std::endl;
 
 	// Command manager limpa automaticamente o pool e buffers
 	commandManager.reset();

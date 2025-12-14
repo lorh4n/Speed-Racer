@@ -1,10 +1,13 @@
 #include <core/ResourceManager.hpp>
 
 
-ResourceManager::ResourceManager(VkDevice device, VmaAllocator allocator) : m_device(device), m_allocator(allocator) {}
+ResourceManager::ResourceManager(VkDevice device, VmaAllocator allocator, VmaWrapper& vmaWrapper) 
+    :   m_device(device), 
+        m_allocator(allocator), 
+        m_vmaWrapper(&vmaWrapper) {}
 ResourceManager::~ResourceManager() {
-   for (auto const& [handle, buffer] : m_buffers) {
-      vmaDestroyBuffer(m_allocator, buffer.buffer, buffer.allocation);
+   for (auto& [handle, buffer] : m_buffers) {
+      m_vmaWrapper->destroyBuffer(buffer);
    }
    m_buffers.clear();
 };
@@ -18,13 +21,7 @@ BufferHandle ResourceManager::createBuffer(const BufferCreateInfo& info) {
    VmaAllocationCreateInfo allocInfo{};
    allocInfo.usage = info.memoryUsage;
 
-   VmaBuffer newVmaBuffer;
-
-   VkResult result = vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo, &newVmaBuffer.buffer, &newVmaBuffer.allocation, nullptr);
-
-   if(result != VK_SUCCESS) {
-      throw std::runtime_error("[ResourceManager]:\t Falha ao criar o buffer com VMA");
-   }
+   VmaBuffer newVmaBuffer = m_vmaWrapper->createBuffer(bufferInfo, allocInfo);
 
    BufferHandle handle = m_bufferHandleAllocator.allocate();
 

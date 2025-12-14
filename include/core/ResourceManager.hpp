@@ -11,7 +11,7 @@
 
 class ResourceManager {
 public:
-   ResourceManager(VkDevice device, VmaAllocator allocator);
+   ResourceManager(VkDevice device, VmaAllocator allocator, VmaWrapper& vmaWrapper);
    ~ResourceManager();
 
    ResourceManager(const ResourceManager&) = delete;
@@ -24,6 +24,7 @@ public:
 private:
    VkDevice m_device;
    VmaAllocator m_allocator;
+   VmaWrapper* m_vmaWrapper;
 
    std::unordered_map<BufferHandle, VmaBuffer> m_buffers;
 

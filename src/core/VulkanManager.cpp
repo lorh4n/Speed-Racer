@@ -47,8 +47,30 @@ void VulkanManager::initVulkan() {
 	createCommandPool();
 	createCommandBuffers();
 	createSyncObjects();
+	createResourceManager();
+	createBufferManager();
 
 	std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
+}
+
+void VulkanManager::createBufferManager() {
+	bufferManager = std::make_unique<BufferManager>(
+		device,
+		vmaWrapper.getAllocator(),
+		*resourceManager,
+		*commandManager,
+		queueManager
+	);
+	std::cout << "[VulkanManager] : Buffer Manager initialized." << std::endl;
+}
+
+void VulkanManager::createResourceManager() {
+	resourceManager = std::make_unique<ResourceManager>(
+		device,
+		vmaWrapper.getAllocator(),
+		vmaWrapper
+	);
+	std::cout << "[VulkanManager] : Resource Manager initialized." << std::endl;
 }
 
 void VulkanManager::setupVmaWrapper() {
@@ -352,6 +374,8 @@ void VulkanManager::cleanup() {
 	std::cout << "[VulkanManager] : Starting cleanup..." << std::endl;
 
 	vkDeviceWaitIdle(device);
+	bufferManager.reset(); 
+   resourceManager.reset();
 
 	// Apenas destruir objetos de sincronização se eles foram criados
 	if (!renderFinishedSemaphores.empty()) {

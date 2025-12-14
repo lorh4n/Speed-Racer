@@ -30,6 +30,7 @@ BufferHandle ResourceManager::createBuffer(const BufferCreateInfo& info) {
    return handle;
 }
 
+
 void ResourceManager::destroyBuffer(BufferHandle handle) {
     // Procura o buffer no mapa.
     auto it = m_buffers.find(handle);

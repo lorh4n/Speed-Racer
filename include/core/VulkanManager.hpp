@@ -17,6 +17,8 @@
 #include <core/PipelineManager.hpp>
 #include <core/CommandManager.hpp>
 #include <core/VmaWrapper.hpp>
+#include <core/ResourceManager.hpp>
+#include <core/BufferManager.hpp>
 
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
@@ -52,6 +54,9 @@ private:
 
     VmaWrapper vmaWrapper;
 
+    std::unique_ptr<ResourceManager> resourceManager;
+    std::unique_ptr<BufferManager> bufferManager;
+
 
     void initVulkan();
     void mainLoop();
@@ -69,6 +74,9 @@ private:
     void drawFrame();
     void createSyncObjects();
     void setupVmaWrapper();
+    void createResourceManager();
+    void createBufferManager();
+
 
     void recreateSwapChain();
     void cleanup();

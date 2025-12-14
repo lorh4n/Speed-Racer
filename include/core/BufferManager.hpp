@@ -5,9 +5,12 @@
 
 #include <core/CommandManager.hpp>
 #include <core/Handle.hpp>
+#include <functional>
+#include <cstring> // Para memcpy
 #include <core/ResourceManager.hpp>
 #include <core/ResourceTypes.hpp>
 #include <core/queueManager.hpp>
+
 
 class BufferManager {
   public:

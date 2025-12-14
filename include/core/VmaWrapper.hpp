@@ -17,6 +17,7 @@ public:
    ~VmaWrapper();
 
    void initialize(VkDevice device, VkPhysicalDevice physicalDevice, VkInstance instance);
+   void destroy();
 
    VmaAllocator getAllocator() const { return allocator; }
 

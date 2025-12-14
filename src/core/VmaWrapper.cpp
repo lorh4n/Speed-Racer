@@ -28,17 +28,23 @@ void VmaWrapper::initialize(VkDevice device, VkPhysicalDevice physicalDevice, Vk
 	std::cout << "[VmaWrapper]: \t VMA initialized successfully!" << std::endl;
 }
 
-VmaWrapper::~VmaWrapper() {
-	// TODO: O que fazer aqui?
-
-	// Dica 1: Você precisa chamar vmaDestroyAllocator
-
-	// Dica 2: E se initialize() nunca foi chamado?
-
+void VmaWrapper::destroy() {
 	if (isInitialized()) {
 		vmaDestroyAllocator(allocator);
-
+		allocator = VK_NULL_HANDLE; // Evita dupla liberação
 		std::cout << "[VmaWrapper]: \t Allocator destroyed." << std::endl;
+	}
+}
+
+VmaWrapper::~VmaWrapper() {
+	// A destruição agora é gerenciada por destroy() para garantir a ordem correta
+	// em relação à destruição do VkDevice.
+	// No entanto, ainda podemos manter uma verificação aqui como segurança.
+	if (isInitialized()) {
+		// Idealmente, destroy() já foi chamado.
+		// Logar um aviso se o allocator ainda existir pode ser útil para debug.
+		std::cout << "[VmaWrapper]: \t Destructor called, but allocator was not explicitly destroyed. Cleaning up now." << std::endl;
+		destroy();
 	}
 }
 

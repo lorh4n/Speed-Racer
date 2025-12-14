@@ -21,6 +21,12 @@
 #include <core/BufferManager.hpp>
 
 
+struct Vertex {
+    float pos[3];   // X, Y, Z
+    float color[3]; // R, G, B
+};
+
+
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
 class VulkanManager {
 public:
@@ -76,6 +82,11 @@ private:
     void setupVmaWrapper();
     void createResourceManager();
     void createBufferManager();
+
+
+
+    BufferHandle vertexBuffer;
+    void createTriangle();
 
 
     void recreateSwapChain();

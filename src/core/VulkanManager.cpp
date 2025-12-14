@@ -50,6 +50,8 @@ void VulkanManager::initVulkan() {
 	createResourceManager();
 	createBufferManager();
 
+	createTriangle();
+
 	std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
 
@@ -374,8 +376,11 @@ void VulkanManager::cleanup() {
 	std::cout << "[VulkanManager] : Starting cleanup..." << std::endl;
 
 	vkDeviceWaitIdle(device);
-	bufferManager.reset(); 
-   resourceManager.reset();
+	bufferManager.reset();
+	resourceManager.reset();
+
+	// Destruir o VMA Allocator ANTES do VkDevice
+	vmaWrapper.destroy();
 
 	// Apenas destruir objetos de sincronização se eles foram criados
 	if (!renderFinishedSemaphores.empty()) {
@@ -432,4 +437,22 @@ void VulkanManager::run() {
 	initVulkan();
 	mainLoop();
 	// cleanup(); // Removido para evitar dupla liberação. O destrutor cuidará disso.
+}
+
+void VulkanManager::createTriangle() {
+    // 1. Definir os dados na CPU (posição + cor)
+    std::vector<Vertex> vertices = {
+        {{ 0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Vértice Superior (Vermelho)
+        {{ 0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Vértice Direito (Verde)
+        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}  // Vértice Esquerdo (Azul)
+    };
+
+    // 2. Usar o BufferManager para criar e subir para a GPU!
+    // Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
+    vertexBuffer = bufferManager->createVertexBuffer(
+        vertices.data(), 
+        sizeof(Vertex) * vertices.size()
+    );
+
+    std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
 }

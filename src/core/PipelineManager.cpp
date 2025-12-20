@@ -5,8 +5,8 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
    // auto vertShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/vert.spv");
 	// auto fragShaderCode = ShaderManager::readFile("../../assets/shaders/core/compiled/frag.spv");
 	// O codigo funcinou nesse formato, mas eu tenho que entender depois qual é a raiz (./) do projeto
-	auto vertShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/vert.spv");
-	auto fragShaderCode = ShaderManager::readFile("../assets/shaders/core/compiled/frag.spv");
+	auto vertShaderCode = ShaderManager::readFile("../assets/shaders/core/cube/compiled/vert.spv");
+	auto fragShaderCode = ShaderManager::readFile("../assets/shaders/core/cube/compiled/frag.spv");
 
 	VkShaderModule vertShaderModule = ShaderManager::createShaderModule(device, vertShaderCode);
    VkShaderModule fragShaderModule = ShaderManager::createShaderModule(device, fragShaderCode);
@@ -49,13 +49,33 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
 
    // ------------------------------ Vertex Input ---------------------------------------
 
+   // Configuração manual dos atributos (Posição + Cor)
+   // Nota: Idealmente, mova isso para dentro da struct Vertex como um método estático getBindingDescription()
+
+   VkVertexInputBindingDescription bindingDescription{};
+   bindingDescription.binding = 0;
+   bindingDescription.stride = sizeof(float) * 6; // 3 floats pos + 3 floats color (sua struct Vertex atual)
+   bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; 
+
+   std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+   // Posição (Location 0)
+   attributeDescriptions[0].binding = 0;
+   attributeDescriptions[0].location = 0;
+   attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+   attributeDescriptions[0].offset = 0;
+
+   // Cor (Location 1)
+   attributeDescriptions[1].binding = 0;
+   attributeDescriptions[1].location = 1;
+   attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+   attributeDescriptions[1].offset = sizeof(float) * 3;
+
    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-   vertexInputInfo.vertexBindingDescriptionCount = 0;
-   vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-   vertexInputInfo.vertexAttributeDescriptionCount = 0;
-   vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
-
+   vertexInputInfo.vertexBindingDescriptionCount = 1;
+   vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; // <--- AGORA ESTAMOS USANDO
+   vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+   vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); // <--- AGORA ESTAMOS USANDO
    // ------------------------------ Input Assembly -------------------------------------
 
    VkPipelineInputAssemblyStateCreateInfo inputAssembly{}; 
@@ -92,7 +112,7 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
    rasterizer.lineWidth = 1.0f;
    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-   rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+   rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
    rasterizer.depthBiasEnable = VK_FALSE;
    rasterizer.depthBiasConstantFactor = 0.0f; // Optional
@@ -132,12 +152,17 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
 
    // ------------------------------ Pipeline Layout --------------------------------------
 
+   VkPushConstantRange pushConstant{};
+   pushConstant.offset = 0;
+   pushConstant.size = sizeof(MeshPushConstants);
+   pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+   
    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
    pipelineLayoutInfo.setLayoutCount = 0;
    pipelineLayoutInfo.pSetLayouts = nullptr;
-   pipelineLayoutInfo.pushConstantRangeCount = 0;
-   pipelineLayoutInfo.pPushConstantRanges = nullptr;
+   pipelineLayoutInfo.pushConstantRangeCount = 1;
+   pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
    VkPipelineLayout pipelineLayout;
    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {

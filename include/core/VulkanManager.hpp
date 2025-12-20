@@ -87,6 +87,10 @@ private:
 
     BufferHandle vertexBuffer;
     void createTriangle();
+    void createCube();
+
+    BufferHandle indexBuffer;
+    uint32_t indexCount; // Para saber quantos índices desenhar
 
 
     void recreateSwapChain();

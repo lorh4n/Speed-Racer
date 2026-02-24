@@ -1,5 +1,7 @@
 #include <core/RenderPassManager.hpp>
 #include <core/VulkanManager.hpp>
+#include <chrono>
+#include <glm/gtc/matrix_transform.hpp>
 
 VulkanManager::VulkanManager(int width, int height, const char *title) :
     window(width, height, title),
@@ -50,7 +52,7 @@ void VulkanManager::initVulkan() {
 	createResourceManager();
 	createBufferManager();
 
-	createTriangle();
+	createCube();
 
 	std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
@@ -250,8 +252,34 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapchainManager->getSwapchainExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	// Draw (3 vertices)
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	// --- NOVO: Bind dos Buffers ---
+	VkBuffer vertexBuffers[] = {resourceManager->getVkBuffer(vertexBuffer)};
+	VkDeviceSize offsets[] = {0};
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+	vkCmdBindIndexBuffer(commandBuffer, resourceManager->getVkBuffer(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
+
+	// --- NOVO: Calcular Rotação ---
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	// Matriz MVP (Model View Projection)
+	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Roda no eixo Y
+	// glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 proj = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float)swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
+
+	proj[1][1] *= -1; // Correção do Y invertido do Vulkan
+
+	MeshPushConstants constants;
+	constants.render_matrix = proj * view * model;
+
+	// Enviar dados para o shader
+	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+
+	// --- NOVO: Desenhar Indexado ---
+	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -365,11 +393,13 @@ void VulkanManager::setupDebugMessenger() {
 }
 
 void VulkanManager::mainLoop() {
+	std::cout << "[VulkanManager] : Entering main loop..." << std::endl;
 	while (!window.shouldClose()) {
 		window.pollEvents();
 		drawFrame();
 		// Add rendering logic here
 	}
+	std::cout << "[VulkanManager] : Exiting main loop." << std::endl;
 }
 
 void VulkanManager::cleanup() {
@@ -455,4 +485,37 @@ void VulkanManager::createTriangle() {
     );
 
     std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
+}
+
+void VulkanManager::createCube() { // Renomeie createTriangle para createCube
+    // 8 vértices de um cubo (Posição XYZ, Cor RGB)
+    std::vector<Vertex> vertices = {
+        // Frente
+        {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}}, // 0
+        {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}}, // 1
+        {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}, // 2
+        {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}}, // 3
+        // Trás
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}}, // 4
+        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}}, // 5
+        {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}}, // 6
+        {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 7
+    };
+
+    // Índices para formar os triângulos
+    std::vector<uint32_t> indices = {
+        0, 1, 2, 2, 3, 0, // Frente
+        1, 5, 6, 6, 2, 1, // Direita
+        5, 4, 7, 7, 6, 5, // Trás
+        4, 0, 3, 3, 7, 4, // Esquerda
+        3, 2, 6, 6, 7, 3, // Topo
+        4, 5, 1, 1, 0, 4  // Base
+    };
+    
+    indexCount = static_cast<uint32_t>(indices.size());
+
+    vertexBuffer = bufferManager->createVertexBuffer(vertices.data(), sizeof(Vertex) * vertices.size());
+    indexBuffer = bufferManager->createIndexBuffer(indices.data(), sizeof(uint32_t) * indices.size());
+    
+    std::cout << "[VulkanManager] : Cube created." << std::endl;
 }

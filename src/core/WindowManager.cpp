@@ -1,7 +1,15 @@
 #include <core/WindowManager.hpp>
+#include <cstdio>
+
+static void glfw_error_callback(int error, const char* description) {
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
 
 WindowManager::WindowManager(int width, int height, const std::string &title) :
     width(width), height(height), title(title), window(nullptr) {
+	// Set the error callback
+	glfwSetErrorCallback(glfw_error_callback);
+	
 	// Initialize GLFW
 	if (!glfwInit())
 	{

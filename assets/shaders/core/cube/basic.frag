@@ -5,4 +5,8 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     outColor = vec4(fragColor, 1.0);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)

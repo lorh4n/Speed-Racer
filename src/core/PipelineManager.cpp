@@ -49,12 +49,18 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
 
    // ------------------------------ Vertex Input ---------------------------------------
 
+<<<<<<< HEAD
    // Configuração manual dos atributos (Posição + Cor)
    // Nota: Idealmente, mova isso para dentro da struct Vertex como um método estático getBindingDescription()
 
    VkVertexInputBindingDescription bindingDescription{};
    bindingDescription.binding = 0;
    bindingDescription.stride = sizeof(float) * 6; // 3 floats pos + 3 floats color (sua struct Vertex atual)
+=======
+   VkVertexInputBindingDescription bindingDescription{};
+   bindingDescription.binding = 0;
+   bindingDescription.stride = sizeof(float) * 6; // 3 floats pos + 3 floats color
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; 
 
    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
@@ -73,9 +79,16 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
    vertexInputInfo.vertexBindingDescriptionCount = 1;
+<<<<<<< HEAD
    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; // <--- AGORA ESTAMOS USANDO
    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); // <--- AGORA ESTAMOS USANDO
+=======
+   vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+   vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+   vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
    // ------------------------------ Input Assembly -------------------------------------
 
    VkPipelineInputAssemblyStateCreateInfo inputAssembly{}; 
@@ -156,7 +169,11 @@ std::pair<VkPipeline, VkPipelineLayout> PipelineManager::createGraphicsPipeline(
    pushConstant.offset = 0;
    pushConstant.size = sizeof(MeshPushConstants);
    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+<<<<<<< HEAD
    
+=======
+
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
    pipelineLayoutInfo.setLayoutCount = 0;

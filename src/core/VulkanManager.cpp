@@ -252,21 +252,33 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapchainManager->getSwapchainExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
+<<<<<<< HEAD
 	// --- NOVO: Bind dos Buffers ---
+=======
+	// --- Bind dos Buffers ---
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 	VkBuffer vertexBuffers[] = {resourceManager->getVkBuffer(vertexBuffer)};
 	VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(commandBuffer, resourceManager->getVkBuffer(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
 
+<<<<<<< HEAD
 	// --- NOVO: Calcular Rotação ---
+=======
+	// --- Calcular Rotação ---
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 	static auto startTime = std::chrono::high_resolution_clock::now();
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	// Matriz MVP (Model View Projection)
+<<<<<<< HEAD
 	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Roda no eixo Y
 	// glm::mat4 model = glm::mat4(1.0f);
+=======
+	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); 
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float)swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
 
@@ -278,7 +290,11 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	// Enviar dados para o shader
 	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 
+<<<<<<< HEAD
 	// --- NOVO: Desenhar Indexado ---
+=======
+	// --- Desenhar Indexado ---
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
@@ -341,9 +357,12 @@ void VulkanManager::pickPhysicalDevice() {
 }
 
 void VulkanManager::createInstance() {
-	// Check validation layer support if enabled
-	if (VulkanTools::enableValidationLayers && !VulkanTools::checkValidationLayerSupport()) {
-		throw std::runtime_error("[VulkanManager] : Validation layers requested, but not available!");
+	bool useValidationLayers = VulkanTools::enableValidationLayers;
+
+	// Check validation layer support and disable if not available
+	if (useValidationLayers && !VulkanTools::checkValidationLayerSupport()) {
+		std::cerr << "[VulkanManager] : Validation layers requested but NOT available on this system. Proceeding without them." << std::endl;
+		useValidationLayers = false;
 	}
 
 	VkApplicationInfo appInfo{};
@@ -364,7 +383,7 @@ void VulkanManager::createInstance() {
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-	if (VulkanTools::enableValidationLayers) {
+	if (useValidationLayers) {
 		createInfo.enabledLayerCount   = static_cast<uint32_t>(VulkanTools::validationLayers.size());
 		createInfo.ppEnabledLayerNames = VulkanTools::validationLayers.data();
 
@@ -374,6 +393,7 @@ void VulkanManager::createInstance() {
 	else {
 		createInfo.enabledLayerCount   = 0;
 		createInfo.ppEnabledLayerNames = nullptr;
+		createInfo.pNext               = nullptr;
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
@@ -405,7 +425,9 @@ void VulkanManager::mainLoop() {
 void VulkanManager::cleanup() {
 	std::cout << "[VulkanManager] : Starting cleanup..." << std::endl;
 
-	vkDeviceWaitIdle(device);
+	if (device != VK_NULL_HANDLE) {
+		vkDeviceWaitIdle(device);
+	}
 	bufferManager.reset();
 	resourceManager.reset();
 
@@ -413,11 +435,11 @@ void VulkanManager::cleanup() {
 	vmaWrapper.destroy();
 
 	// Apenas destruir objetos de sincronização se eles foram criados
-	if (!renderFinishedSemaphores.empty()) {
+	if (device != VK_NULL_HANDLE && !renderFinishedSemaphores.empty()) {
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-			vkDestroyFence(device, inFlightFences[i], nullptr);
+			if (renderFinishedSemaphores[i] != VK_NULL_HANDLE) vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+			if (imageAvailableSemaphores[i] != VK_NULL_HANDLE) vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+			if (inFlightFences[i] != VK_NULL_HANDLE) vkDestroyFence(device, inFlightFences[i], nullptr);
 		}
 		std::cout << "[VulkanManager] : Synchronization objects destroyed." << std::endl;
 	}
@@ -427,7 +449,7 @@ void VulkanManager::cleanup() {
 	std::cout << "[VulkanManager] : Command manager destroyed." << std::endl;
 
 	// Desaloca em ordem inversa de criação para evitar o uso de recursos já destruídos.
-	if (graphicsPipeline != VK_NULL_HANDLE || graphicsPipelineLayout != VK_NULL_HANDLE) {
+	if (device != VK_NULL_HANDLE && (graphicsPipeline != VK_NULL_HANDLE || graphicsPipelineLayout != VK_NULL_HANDLE)) {
 		PipelineManager::destroy(device, graphicsPipeline, graphicsPipelineLayout);
 	}
 
@@ -435,7 +457,7 @@ void VulkanManager::cleanup() {
 	swapchainManager.reset();
 	std::cout << "[VulkanManager] : Swapchain manager destroyed." << std::endl;
 
-	if (renderPass != VK_NULL_HANDLE) {
+	if (device != VK_NULL_HANDLE && renderPass != VK_NULL_HANDLE) {
 		RenderPassManager::destroy(device, renderPass);
 		std::cout << "[VulkanManager] : Render pass destroyed." << std::endl;
 	}
@@ -444,17 +466,17 @@ void VulkanManager::cleanup() {
 		std::cout << "[VulkanManager] : Logical device destroyed." << std::endl;
 		device = VK_NULL_HANDLE;
 	}
-	if (surface != VK_NULL_HANDLE) {
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		std::cout << "[VulkanManager] : Surface destroyed." << std::endl;
-		surface = VK_NULL_HANDLE;
-	}
-	if (VulkanTools::enableValidationLayers && debugMessenger != VK_NULL_HANDLE) {
-		VulkanTools::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-		std::cout << "[VulkanManager] : Debug messenger destroyed." << std::endl;
-		debugMessenger = VK_NULL_HANDLE;
-	}
 	if (instance != VK_NULL_HANDLE) {
+		if (surface != VK_NULL_HANDLE) {
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+			std::cout << "[VulkanManager] : Surface destroyed." << std::endl;
+			surface = VK_NULL_HANDLE;
+		}
+		if (VulkanTools::enableValidationLayers && debugMessenger != VK_NULL_HANDLE) {
+			VulkanTools::DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+			std::cout << "[VulkanManager] : Debug messenger destroyed." << std::endl;
+			debugMessenger = VK_NULL_HANDLE;
+		}
 		vkDestroyInstance(instance, nullptr);
 		std::cout << "[VulkanManager] : Vulkan instance destroyed." << std::endl;
 		instance = VK_NULL_HANDLE;
@@ -487,7 +509,11 @@ void VulkanManager::createTriangle() {
     std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
 }
 
+<<<<<<< HEAD
 void VulkanManager::createCube() { // Renomeie createTriangle para createCube
+=======
+void VulkanManager::createCube() { 
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
     // 8 vértices de um cubo (Posição XYZ, Cor RGB)
     std::vector<Vertex> vertices = {
         // Frente
@@ -518,4 +544,8 @@ void VulkanManager::createCube() { // Renomeie createTriangle para createCube
     indexBuffer = bufferManager->createIndexBuffer(indices.data(), sizeof(uint32_t) * indices.size());
     
     std::cout << "[VulkanManager] : Cube created." << std::endl;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)

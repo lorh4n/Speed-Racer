@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "VulkanUtils/VulkanTools.hpp"
+#include <core/ResourceTypes.hpp>
 
 #include <core/WindowManager.hpp>
 #include <core/logicalDevice.hpp>
@@ -19,12 +20,6 @@
 #include <core/VmaWrapper.hpp>
 #include <core/ResourceManager.hpp>
 #include <core/BufferManager.hpp>
-
-
-struct Vertex {
-    float pos[3];   // X, Y, Z
-    float color[3]; // R, G, B
-};
 
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
@@ -86,11 +81,17 @@ private:
 
 
     BufferHandle vertexBuffer;
+    BufferHandle indexBuffer;
+    uint32_t indexCount;
+    
     void createTriangle();
     void createCube();
+<<<<<<< HEAD
 
     BufferHandle indexBuffer;
     uint32_t indexCount; // Para saber quantos índices desenhar
+=======
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 
 
     void recreateSwapChain();

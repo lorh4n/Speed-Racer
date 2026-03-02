@@ -49,3 +49,19 @@ mas posso me arrepender se for adicionar o opengl na engine depois???
 implemntei o a parte do instance do tutoiral link (https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Instance)
 vamos agora (10:47) pra validation layers, eu vou pedir ajuda pra ia nessa parte pq na minha cabeça é muito complexo isso
 a partir daqui eu vou fazer o uml ou diagramas pra ficar melhor
+
+---
+
+## 📅 01 de Março de 2026
+
+Hoje foi dia de "arrumar a casa" depois de formatar o PC e trazer features importantes de outras branches pra main.
+
+- **Portabilidade e CMake:** Atualizei o `CMakeLists.txt` pra usar `add_subdirectory` com as bibliotecas na pasta `libs/` (`glfw`, `glm`, `VMA`). Isso é muito melhor porque o projeto fica mais "autossuficiente" e não dá erro de "arquivo não encontrado" toda vez que mudar de PC.
+- **Validation Layers:** Como o PC estava limpo, o Vulkan dava crash logo de cara. Melhorei o `VulkanManager` pra ser mais robusto: agora ele verifica se as camadas de validação existem antes de tentar usar. Se não tiver, ele avisa e continua rodando em vez de explodir. Aproveitei e listei as dependências no `readme.md`.
+- **Do Triângulo ao Cubo (Branch Devil):** Finalmente joguei o cubo 3D pra main!
+    - **Push Constants:** Implementei pra mandar a matriz de transformação (MVP) direto pro shader sem precisar de Descriptor Sets por enquanto.
+    - **Indexed Drawing:** Mudei a lógica de desenho pra usar `vkCmdDrawIndexed`. É muito mais limpo pra objetos complexos como o cubo.
+    - **Matemática:** Usei a `glm` pra calcular a rotação em tempo real com base no clock do sistema.
+- **Limpeza:** Movi a struct `Vertex` pra `ResourceTypes.hpp` pra deixar os cabeçalhos mais organizados e fáceis de manter.
+
+O motor agora inicializa certinho, o build tá liso e o cubo tá lá girando! 🧊✨

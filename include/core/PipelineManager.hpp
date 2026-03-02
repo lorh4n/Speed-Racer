@@ -7,8 +7,16 @@
 #include <string>
 #include <utility>
 #include <iostream>
+<<<<<<< HEAD
 #include <glm/vec4.hpp>
 #include <glm/glm.hpp>
+=======
+#include <glm/glm.hpp>
+
+struct MeshPushConstants {
+    glm::mat4 render_matrix;
+};
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 
 
 
@@ -25,7 +33,6 @@ struct PipelineConfig {
   VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
   VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
-//   [...] lembrar de mexer aqui
 };
 
 

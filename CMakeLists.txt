@@ -30,14 +30,19 @@ add_executable(Speed_Racer
 target_include_directories(Speed_Racer PRIVATE 
    ${CMAKE_CURRENT_SOURCE_DIR}/include
    ${CMAKE_CURRENT_SOURCE_DIR}/include/VulkanUtils
-   ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include
    ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui
-   ${CMAKE_CURRENT_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
 )
+
+# Adicionando bibliotecas via subdiretórios
+add_subdirectory(libs/glfw)
+add_subdirectory(libs/VulkanMemoryAllocator)
+add_subdirectory(libs/glm)
 
 target_link_libraries(Speed_Racer 
     Vulkan::Vulkan
     glfw
+    VulkanMemoryAllocator
+    glm
     GL
     X11
     pthread

@@ -13,4 +13,8 @@ layout(push_constant) uniform PushConstants {
 void main() {
     gl_Position = push.renderMatrix * vec4(inPosition, 1.0);
     fragColor = inColor;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)

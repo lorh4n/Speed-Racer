@@ -1,6 +1,6 @@
+#include <chrono>
 #include <core/RenderPassManager.hpp>
 #include <core/VulkanManager.hpp>
-#include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
 
 VulkanManager::VulkanManager(int width, int height, const char *title) :
@@ -59,21 +59,19 @@ void VulkanManager::initVulkan() {
 
 void VulkanManager::createBufferManager() {
 	bufferManager = std::make_unique<BufferManager>(
-		device,
-		vmaWrapper.getAllocator(),
-		*resourceManager,
-		*commandManager,
-		queueManager
-	);
+	    device,
+	    vmaWrapper.getAllocator(),
+	    *resourceManager,
+	    *commandManager,
+	    queueManager);
 	std::cout << "[VulkanManager] : Buffer Manager initialized." << std::endl;
 }
 
 void VulkanManager::createResourceManager() {
 	resourceManager = std::make_unique<ResourceManager>(
-		device,
-		vmaWrapper.getAllocator(),
-		vmaWrapper
-	);
+	    device,
+	    vmaWrapper.getAllocator(),
+	    vmaWrapper);
 	std::cout << "[VulkanManager] : Resource Manager initialized." << std::endl;
 }
 
@@ -134,8 +132,6 @@ void VulkanManager::drawFrame() {
 	}
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
-
-	//  vkAcquireNextImageKHR(device, swapchainManager->getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	vkResetCommandBuffer(commandBuffers[currentFrame], 0);
 	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
@@ -252,37 +248,24 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapchainManager->getSwapchainExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-<<<<<<< HEAD
-	// --- NOVO: Bind dos Buffers ---
-=======
 	// --- Bind dos Buffers ---
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
-	VkBuffer vertexBuffers[] = {resourceManager->getVkBuffer(vertexBuffer)};
-	VkDeviceSize offsets[] = {0};
+	VkBuffer     vertexBuffers[] = {resourceManager->getVkBuffer(vertexBuffer)};
+	VkDeviceSize offsets[]       = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(commandBuffer, resourceManager->getVkBuffer(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
 
-<<<<<<< HEAD
-	// --- NOVO: Calcular Rotação ---
-=======
 	// --- Calcular Rotação ---
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
-	static auto startTime = std::chrono::high_resolution_clock::now();
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	static auto startTime   = std::chrono::high_resolution_clock::now();
+	auto        currentTime = std::chrono::high_resolution_clock::now();
+	float       time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	// Matriz MVP (Model View Projection)
-<<<<<<< HEAD
-	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Roda no eixo Y
-	// glm::mat4 model = glm::mat4(1.0f);
-=======
-	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); 
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
-	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 proj = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float)swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
+	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 proj  = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float) swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
 
-	proj[1][1] *= -1; // Correção do Y invertido do Vulkan
+	proj[1][1] *= -1;        // Correção do Y invertido do Vulkan
 
 	MeshPushConstants constants;
 	constants.render_matrix = proj * view * model;
@@ -290,11 +273,7 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	// Enviar dados para o shader
 	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 
-<<<<<<< HEAD
-	// --- NOVO: Desenhar Indexado ---
-=======
 	// --- Desenhar Indexado ---
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
@@ -437,9 +416,12 @@ void VulkanManager::cleanup() {
 	// Apenas destruir objetos de sincronização se eles foram criados
 	if (device != VK_NULL_HANDLE && !renderFinishedSemaphores.empty()) {
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			if (renderFinishedSemaphores[i] != VK_NULL_HANDLE) vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-			if (imageAvailableSemaphores[i] != VK_NULL_HANDLE) vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-			if (inFlightFences[i] != VK_NULL_HANDLE) vkDestroyFence(device, inFlightFences[i], nullptr);
+			if (renderFinishedSemaphores[i] != VK_NULL_HANDLE)
+				vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+			if (imageAvailableSemaphores[i] != VK_NULL_HANDLE)
+				vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+			if (inFlightFences[i] != VK_NULL_HANDLE)
+				vkDestroyFence(device, inFlightFences[i], nullptr);
 		}
 		std::cout << "[VulkanManager] : Synchronization objects destroyed." << std::endl;
 	}
@@ -492,60 +474,51 @@ void VulkanManager::run() {
 }
 
 void VulkanManager::createTriangle() {
-    // 1. Definir os dados na CPU (posição + cor)
-    std::vector<Vertex> vertices = {
-        {{ 0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Vértice Superior (Vermelho)
-        {{ 0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Vértice Direito (Verde)
-        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}  // Vértice Esquerdo (Azul)
-    };
+	// 1. Definir os dados na CPU (posição + cor)
+	std::vector<Vertex> vertices = {
+	    {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},        // Vértice Superior (Vermelho)
+	    {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},         // Vértice Direito (Verde)
+	    {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}         // Vértice Esquerdo (Azul)
+	};
 
-    // 2. Usar o BufferManager para criar e subir para a GPU!
-    // Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
-    vertexBuffer = bufferManager->createVertexBuffer(
-        vertices.data(), 
-        sizeof(Vertex) * vertices.size()
-    );
+	// 2. Usar o BufferManager para criar e subir para a GPU!
+	// Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
+	vertexBuffer = bufferManager->createVertexBuffer(
+	    vertices.data(),
+	    sizeof(Vertex) * vertices.size());
 
-    std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
+	std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
 }
 
-<<<<<<< HEAD
-void VulkanManager::createCube() { // Renomeie createTriangle para createCube
-=======
-void VulkanManager::createCube() { 
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
-    // 8 vértices de um cubo (Posição XYZ, Cor RGB)
-    std::vector<Vertex> vertices = {
-        // Frente
-        {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}}, // 0
-        {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}}, // 1
-        {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}, // 2
-        {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}}, // 3
-        // Trás
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}}, // 4
-        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}}, // 5
-        {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}}, // 6
-        {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 7
-    };
+void VulkanManager::createCube() {
+	// 8 vértices de um cubo (Posição XYZ, Cor RGB)
+	std::vector<Vertex> vertices = {
+	    // Frente
+	    {{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},        // 0
+	    {{0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},         // 1
+	    {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},          // 2
+	    {{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},         // 3
+	    // Trás
+	    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}},        // 4
+	    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}},         // 5
+	    {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},          // 6
+	    {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}          // 7
+	};
 
-    // Índices para formar os triângulos
-    std::vector<uint32_t> indices = {
-        0, 1, 2, 2, 3, 0, // Frente
-        1, 5, 6, 6, 2, 1, // Direita
-        5, 4, 7, 7, 6, 5, // Trás
-        4, 0, 3, 3, 7, 4, // Esquerda
-        3, 2, 6, 6, 7, 3, // Topo
-        4, 5, 1, 1, 0, 4  // Base
-    };
-    
-    indexCount = static_cast<uint32_t>(indices.size());
+	// Índices para formar os triângulos
+	std::vector<uint32_t> indices = {
+	    0, 1, 2, 2, 3, 0,        // Frente
+	    1, 5, 6, 6, 2, 1,        // Direita
+	    5, 4, 7, 7, 6, 5,        // Trás
+	    4, 0, 3, 3, 7, 4,        // Esquerda
+	    3, 2, 6, 6, 7, 3,        // Topo
+	    4, 5, 1, 1, 0, 4         // Base
+	};
 
-    vertexBuffer = bufferManager->createVertexBuffer(vertices.data(), sizeof(Vertex) * vertices.size());
-    indexBuffer = bufferManager->createIndexBuffer(indices.data(), sizeof(uint32_t) * indices.size());
-    
-    std::cout << "[VulkanManager] : Cube created." << std::endl;
-<<<<<<< HEAD
+	indexCount = static_cast<uint32_t>(indices.size());
+
+	vertexBuffer = bufferManager->createVertexBuffer(vertices.data(), sizeof(Vertex) * vertices.size());
+	indexBuffer  = bufferManager->createIndexBuffer(indices.data(), sizeof(uint32_t) * indices.size());
+
+	std::cout << "[VulkanManager] : Cube created." << std::endl;
 }
-=======
-}
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)

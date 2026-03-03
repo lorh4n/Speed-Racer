@@ -7,23 +7,12 @@
 #include <string>
 #include <utility>
 #include <iostream>
-<<<<<<< HEAD
-#include <glm/vec4.hpp>
-#include <glm/glm.hpp>
-=======
 #include <glm/glm.hpp>
 
 struct MeshPushConstants {
     glm::mat4 render_matrix;
 };
->>>>>>> 735a67e ([VulkanManager] Rotating cube added and project robustness improved)
 
-
-
-struct MeshPushConstants {
-    // glm::vec4 data; // Remova ou comente este campo
-    glm::mat4 render_matrix;
-};
 struct PipelineConfig {
   VkExtent2D extend;
   VkRenderPass renderPass;

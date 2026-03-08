@@ -13,7 +13,8 @@ VulkanManager::VulkanManager(int width, int height, const char *title) :
     swapchainManager(nullptr),
     commandManager(nullptr),
     framebufferResized(false),
-    cubeMesh(nullptr) {
+    cubeMesh(nullptr),
+    triangleMesh(nullptr) {
 	std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
 
 	// Set user pointer so callback can access this instance
@@ -52,6 +53,7 @@ void VulkanManager::initVulkan() {
 	createBufferManager();
 
 	createCube();
+	createTriangle();
 
 	std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
@@ -247,37 +249,49 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapchainManager->getSwapchainExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	cubeMesh->bind(commandBuffer);
-
-	// --- Calcular Rotação ---
+	// --- CÁLCULO DE TEMPO ---
 	static auto startTime   = std::chrono::high_resolution_clock::now();
 	auto        currentTime = std::chrono::high_resolution_clock::now();
 	float       time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	// Matriz MVP (Model View Projection)
-	glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 proj  = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float) swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
-
+	// Matrizes fixas (Câmera e Projeção)
+	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 proj = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float) swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
 	proj[1][1] *= -1;        // Correção do Y invertido do Vulkan
 
 	MeshPushConstants constants;
-	constants.render_matrix = proj * view * model;
 
-	// Enviar dados para o shader
-	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+	// --- DESENHAR O CUBO (À DIREITA) ---
+	if (cubeMesh) {
+		cubeMesh->bind(commandBuffer);
 
-	// --- Desenhar Indexado ---
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, 0.0f, 0.0f));
+		model           = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	cubeMesh->draw(commandBuffer);
+		constants.render_matrix = proj * view * model;
+
+		vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+		cubeMesh->draw(commandBuffer);
+	}
+
+	// --- DESENHAR O TRIÂNGULO (À ESQUERDA) ---
+	if (triangleMesh) {
+		triangleMesh->bind(commandBuffer);
+
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.8f, 0.0f, 0.0f));
+		model           = glm::rotate(model, time * glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		constants.render_matrix = proj * view * model;
+
+		vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+		triangleMesh->draw(commandBuffer);
+	}
 
 	vkCmdEndRenderPass(commandBuffer);
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("[VulkanManager] : Failed to record command buffer!");
 	}
-
-	// std::cout << "[VulkanManager] : Command buffer recorded for image " << imageIndex << std::endl;
 }
 
 void VulkanManager::createCommandPool() {
@@ -402,6 +416,10 @@ void VulkanManager::cleanup() {
 	if (device != VK_NULL_HANDLE) {
 		vkDeviceWaitIdle(device);
 	}
+
+	cubeMesh.reset();
+	triangleMesh.reset();
+
 	bufferManager.reset();
 	resourceManager.reset();
 
@@ -468,31 +486,14 @@ void VulkanManager::run() {
 	// cleanup(); // Removido para evitar dupla liberação. O destrutor cuidará disso.
 }
 
-// void VulkanManager::createTriangle() {
-// 	// 1. Definir os dados na CPU (posição + cor)
-// 	std::vector<Vertex> vertices = {
-// 	    {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},        // Vértice Superior (Vermelho)
-// 	    {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},         // Vértice Direito (Verde)
-// 	    {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}         // Vértice Esquerdo (Azul)
-// 	};
-
-// 	// 2. Usar o BufferManager para criar e subir para a GPU!
-// 	// Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
-// 	vertexBuffer = bufferManager->createVertexBuffer(
-// 	    vertices.data(),
-// 	    sizeof(Vertex) * vertices.size());
-
-// 	std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
-// }
-
 void VulkanManager::createCube() {
-	// 8 vértices de um cubo (Posição XYZ, Cor RGB)
-
-	MeshData cubeData = MeshFactory::makeCube();
-
 	cubeMesh = std::make_unique<Mesh>(bufferManager.get());
+	cubeMesh->upload(MeshFactory::makeCube(), *bufferManager);
+	std::cout << "[VulkanManager] : Cube mesh created." << std::endl;
+}
 
-	cubeMesh->upload(MeshFactory::makeQuad(), *bufferManager);
-
-	std::cout << "[VulkanManager] : Cube created." << std::endl;
+void VulkanManager::createTriangle() {
+	triangleMesh = std::make_unique<Mesh>(bufferManager.get());
+	triangleMesh->upload(MeshFactory::makeTriangle(), *bufferManager);
+	std::cout << "[VulkanManager] : Triangle mesh created." << std::endl;
 }

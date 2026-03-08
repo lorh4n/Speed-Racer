@@ -68,3 +68,23 @@ O motor agora inicializa certinho, o build tá liso e o cubo tá lá girando! �
 
 
 Roadmap de implementção esta no Notion
+
+---
+
+## 📅 07 de Março de 2026
+
+Dia de refatoração pesada e abstração de geometria! 🛠️💎
+
+- **Abstração de Geometria (Classe `Mesh`):** Finalmente criei uma classe dedicada pra gerenciar os objetos 3D. O `Mesh` agora encapsula os handles de buffers (vértices e índices) e sabe como se preparar para o desenho (`bind`) e como enviar o comando de renderização (`draw`). Isso removeu toda aquela lógica manual "solta" que estava no `VulkanManager`.
+- **Refatoração e Boas Práticas:**
+    - Movi a implementação do `Mesh` para um arquivo `.cpp` dedicado. Isso ajuda a manter os cabeçalhos limpos e melhora o tempo de compilação.
+    - Implementei **Move Semantics** (`&&` operators) para garantir que possamos transferir meshes sem copiar dados pesados da GPU por acidente.
+    - Adicionei proteção contra **Memory Leak**: agora, se você subir novos dados para um Mesh que já existe, ele limpa automaticamente os buffers antigos na placa de vídeo.
+- **`MeshFactory`:** Criei um gerador de geometrias básicas (Cubo, Triângulo e Quadrado). Agora, criar um cubo é tão simples quanto chamar `MeshFactory::makeCube()`.
+- **Melhorias no `BufferManager`:**
+    - Implementei a função `destroyBuffer` que recebe uma referência para o handle. Isso permite que o gerente invalide o handle na origem (setando como `INVALID_HANDLE`), evitando erros de "double destruction".
+- **Integração no `VulkanManager`:**
+    - O cubo agora é gerenciado por um `std::unique_ptr<Mesh>`, garantindo que ele seja destruído no momento certo e não cause erros de construtor padrão durante a inicialização do motor.
+    - Limpamos a função `recordCommandBuffer`, que agora conversa com objetos `Mesh` em vez de manipular buffers brutos do Vulkan.
+
+A arquitetura da engine deu um salto enorme hoje. O código está muito mais profissional, fácil de expandir e seguro contra vazamentos de memória. 🧊⚙️🚀

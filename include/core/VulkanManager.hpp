@@ -78,9 +78,10 @@ class VulkanManager {
 	void createBufferManager();
 
 	// TESTES DE MESH E RENDERING
-	std::unique_ptr<Mesh>  cubeMesh;
-	// void createTriangle();
+	std::unique_ptr<Mesh> cubeMesh;
+	std::unique_ptr<Mesh> triangleMesh;
 	void createCube();
+	void createTriangle();
 
 	void recreateSwapChain();
 	void cleanup();

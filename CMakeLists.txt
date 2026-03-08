@@ -26,6 +26,7 @@ add_executable(Speed_Racer
    src/core/ResourceManager.cpp
    src/core/BufferManager.cpp
    src/core/Mesh.cpp
+   src/core/ModelLoader.cpp
 )
 
 target_include_directories(Speed_Racer PRIVATE 
@@ -38,6 +39,12 @@ target_include_directories(Speed_Racer PRIVATE
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/VulkanMemoryAllocator)
 add_subdirectory(libs/glm)
+
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+add_subdirectory(libs/assimp)
+
 
 target_link_libraries(Speed_Racer 
     Vulkan::Vulkan

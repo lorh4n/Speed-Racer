@@ -101,13 +101,27 @@ bool Mesh::isValid() const {
 }
 
 void Mesh::upload(const MeshData &data, BufferManager &bufferManager) {
-	vertexBuffer = bufferManager.createVertexBuffer(data.vertices.data(), sizeof(Vertex) * data.vertices.size());
-	indexBuffer  = bufferManager.createIndexBuffer(data.indices.data(), sizeof(uint32_t) * data.indices.size());
-
-	indexCount = static_cast<uint32_t>(data.indices.size());
-	uploaded   = true;
-
-	std::cout << "[Mesh] : Uploaded " << data.vertices.size() << " vertices, " << data.indices.size() << " indices." << '\n'; // usei << std::endl e quebrou
+    if (data.vertices.empty() || data.indices.empty()) {
+        throw std::runtime_error("[Mesh] : MeshData está vazio!");
+    }
+    
+    // Criar vertex buffer
+    vertexBuffer = bufferManager.createVertexBuffer(
+        data.vertices.data(),
+        data.vertices.size() * sizeof(Vertex)
+    );
+    
+    // Criar index buffer
+    indexBuffer = bufferManager.createIndexBuffer(
+        data.indices.data(),
+        data.indices.size() * sizeof(uint32_t)
+    );
+    
+    indexCount = static_cast<uint32_t>(data.indices.size());
+    
+    std::cout << "[Mesh] : Upload completo - " 
+              << data.vertices.size() << " vértices, "
+              << data.indices.size() << " índices" << std::endl;
 }
 
 

@@ -3,13 +3,9 @@
 #include <core/Handle.hpp>
 #include <core/BufferManager.hpp>
 #include <core/ResourceManager.hpp>
+#include <core/ResourceTypes.hpp>
 #include <vector>
 
-// Dados brutos da mesh (CPU side)
-struct MeshData {
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-};
 
 class Mesh {
   private:

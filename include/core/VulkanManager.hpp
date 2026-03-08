@@ -21,12 +21,13 @@
 #include <core/physicalDevice.hpp>
 #include <core/queueManager.hpp>
 #include <core/Mesh.hpp>
+#include <core/ModelLoader.hpp>
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
 class VulkanManager {
   public:
 	VulkanManager(int width, int height, const char *title);
-	~VulkanManager();
+	~VulkanManager();  
 	void run();
 
   private:
@@ -77,11 +78,15 @@ class VulkanManager {
 	void createResourceManager();
 	void createBufferManager();
 
-	// TESTES DE MESH E RENDERING
-	std::unique_ptr<Mesh> cubeMesh;
-	std::unique_ptr<Mesh> triangleMesh;
-	void createCube();
-	void createTriangle();
+	// // TESTES DE MESH E RENDERING
+	// std::unique_ptr<Mesh> cubeMesh;
+	// std::unique_ptr<Mesh> triangleMesh;
+	// void createCube();
+	// void createTriangle();
+
+	std::vector<Mesh> carMeshes;  //
+
+	void loadCarModel();
 
 	void recreateSwapChain();
 	void cleanup();

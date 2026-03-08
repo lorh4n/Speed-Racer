@@ -12,9 +12,10 @@ VulkanManager::VulkanManager(int width, int height, const char *title) :
     device(VK_NULL_HANDLE),
     swapchainManager(nullptr),
     commandManager(nullptr),
-    framebufferResized(false),
-    cubeMesh(nullptr),
-    triangleMesh(nullptr) {
+    framebufferResized(false)
+//  cubeMesh(nullptr),
+//  triangleMesh(nullptr)
+{
 	std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
 
 	// Set user pointer so callback can access this instance
@@ -52,8 +53,10 @@ void VulkanManager::initVulkan() {
 	createResourceManager();
 	createBufferManager();
 
-	createCube();
-	createTriangle();
+	// createCube();
+	// createTriangle();
+
+	loadCarModel();
 
 	std::cout << "[VulkanManager] : Vulkan initialized successfully." << std::endl;
 }
@@ -255,37 +258,50 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	float       time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	// Matrizes fixas (Câmera e Projeção)
-	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), swapchainManager->getSwapchainExtent().width / (float) swapchainManager->getSwapchainExtent().height, 0.1f, 10.0f);
 	proj[1][1] *= -1;        // Correção do Y invertido do Vulkan
 
 	MeshPushConstants constants;
 
-	// --- DESENHAR O CUBO (À DIREITA) ---
-	if (cubeMesh) {
-		cubeMesh->bind(commandBuffer);
+	if (!carMeshes.empty()) {
+		for (auto &mesh : carMeshes) {
+			mesh.bind(commandBuffer);
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, 0.0f, 0.0f));
+			model           = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.01f));
 
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, 0.0f, 0.0f));
-		model           = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			constants.render_matrix = proj * view * model;
 
-		constants.render_matrix = proj * view * model;
-
-		vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
-		cubeMesh->draw(commandBuffer);
+			vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+			mesh.draw(commandBuffer);
+		}
 	}
+	// --- DESENHAR O CUBO (À DIREITA) ---
+	// if (cubeMesh) {
+	// 	cubeMesh->bind(commandBuffer);
+
+	// 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, 0.0f, 0.0f));
+	// 	model           = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	// 	constants.render_matrix = proj * view * model;
+
+	// 	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+	// 	cubeMesh->draw(commandBuffer);
+	// }
 
 	// --- DESENHAR O TRIÂNGULO (À ESQUERDA) ---
-	if (triangleMesh) {
-		triangleMesh->bind(commandBuffer);
+	// if (triangleMesh) {
+	// 	triangleMesh->bind(commandBuffer);
 
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.8f, 0.0f, 0.0f));
-		model           = glm::rotate(model, time * glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	// 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.8f, 0.0f, 0.0f));
+	// 	model           = glm::rotate(model, time * glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		constants.render_matrix = proj * view * model;
+	// 	constants.render_matrix = proj * view * model;
 
-		vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
-		triangleMesh->draw(commandBuffer);
-	}
+	// 	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+	// 	triangleMesh->draw(commandBuffer);
+	// }
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -417,8 +433,10 @@ void VulkanManager::cleanup() {
 		vkDeviceWaitIdle(device);
 	}
 
-	cubeMesh.reset();
-	triangleMesh.reset();
+	// cubeMesh.reset();
+	// triangleMesh.reset();
+
+	// Tem que limpar o Car Meshes?
 
 	bufferManager.reset();
 	resourceManager.reset();
@@ -486,14 +504,29 @@ void VulkanManager::run() {
 	// cleanup(); // Removido para evitar dupla liberação. O destrutor cuidará disso.
 }
 
-void VulkanManager::createCube() {
-	cubeMesh = std::make_unique<Mesh>(bufferManager.get());
-	cubeMesh->upload(MeshFactory::makeCube(), *bufferManager);
-	std::cout << "[VulkanManager] : Cube mesh created." << std::endl;
-}
+// void VulkanManager::createCube() {
+// 	cubeMesh = std::make_unique<Mesh>(bufferManager.get());
+// 	cubeMesh->upload(MeshFactory::makeCube(), *bufferManager);
+// 	std::cout << "[VulkanManager] : Cube mesh created." << std::endl;
+// }
 
-void VulkanManager::createTriangle() {
-	triangleMesh = std::make_unique<Mesh>(bufferManager.get());
-	triangleMesh->upload(MeshFactory::makeTriangle(), *bufferManager);
-	std::cout << "[VulkanManager] : Triangle mesh created." << std::endl;
+// void VulkanManager::createTriangle() {
+// 	triangleMesh = std::make_unique<Mesh>(bufferManager.get());
+// 	triangleMesh->upload(MeshFactory::makeTriangle(), *bufferManager);
+// 	std::cout << "[VulkanManager] : Triangle mesh created." << std::endl;
+// }
+
+void VulkanManager::loadCarModel() {
+	std::cout << "[VulkanManager] : Carregando modelo do carro..." << std::endl;
+
+	std::vector<MeshData> meshDatas = ModelLoader::load("../assets/models/obj file.obj");
+
+	carMeshes.reserve(meshDatas.size());
+	for (auto &meshData : meshDatas) {
+		Mesh mesh(bufferManager.get());
+		mesh.upload(meshData, *bufferManager);
+		carMeshes.push_back(std::move(mesh));
+	}
+	std::cout << "[VulkanManager] : Modelo carregado! "
+	          << carMeshes.size() << " meshes." << std::endl;
 }

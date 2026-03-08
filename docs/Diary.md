@@ -38,14 +38,14 @@ Speed-Racer/
     └── run.sh
 ```
 
-# 12 de maio de 2025
+## 12 de maio de 2025
  
  Descobri que eu sou obrigado a fazer um destrutor caso eu faça um construtor
  implementei o basico deo WindowManager
 uma recomendaões de IA é não usar o glad pq eu to mexendo como vulkan ent usaria outra coisa
 mas posso me arrepender se for adicionar o opengl na engine depois???
 
-# 13 de maio de 2025
+## 13 de maio de 2025
 implemntei o a parte do instance do tutoiral link (https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Instance)
 vamos agora (10:47) pra validation layers, eu vou pedir ajuda pra ia nessa parte pq na minha cabeça é muito complexo isso
 a partir daqui eu vou fazer o uml ou diagramas pra ficar melhor
@@ -65,3 +65,6 @@ Hoje foi dia de "arrumar a casa" depois de formatar o PC e trazer features impor
 - **Limpeza:** Movi a struct `Vertex` pra `ResourceTypes.hpp` pra deixar os cabeçalhos mais organizados e fáceis de manter.
 
 O motor agora inicializa certinho, o build tá liso e o cubo tá lá girando! 🧊✨
+
+
+Roadmap de implementção esta no Notion

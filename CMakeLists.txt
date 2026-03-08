@@ -25,6 +25,7 @@ add_executable(Speed_Racer
    src/core/ScopedBuffer.cpp
    src/core/ResourceManager.cpp
    src/core/BufferManager.cpp
+   src/core/Mesh.cpp
 )
 
 target_include_directories(Speed_Racer PRIVATE 

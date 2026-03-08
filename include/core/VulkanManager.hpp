@@ -20,6 +20,7 @@
 #include <core/logicalDevice.hpp>
 #include <core/physicalDevice.hpp>
 #include <core/queueManager.hpp>
+#include <core/Mesh.hpp>
 
 // Coordena a criação da instância Vulkan, ciclo da janela e liberação dos recursos.
 class VulkanManager {
@@ -76,11 +77,9 @@ class VulkanManager {
 	void createResourceManager();
 	void createBufferManager();
 
-	BufferHandle vertexBuffer;
-	BufferHandle indexBuffer;
-	uint32_t     indexCount;
-
-	void createTriangle();
+	// TESTES DE MESH E RENDERING
+	std::unique_ptr<Mesh>  cubeMesh;
+	// void createTriangle();
 	void createCube();
 
 	void recreateSwapChain();

@@ -29,6 +29,8 @@ class BufferManager {
 	BufferHandle createUniformBuffer(size_t size);
 	BufferHandle createStagingBuffer(size_t size);
 
+	void destroyBuffer(BufferHandle& handle);
+
 	void uploadToBuffer(BufferHandle dtsBuffer, const void *data, size_t size);
 	void copyBuffer(BufferHandle srcBuffer,
 	                BufferHandle dstBuffer,

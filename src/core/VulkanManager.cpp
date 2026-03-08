@@ -12,9 +12,8 @@ VulkanManager::VulkanManager(int width, int height, const char *title) :
     device(VK_NULL_HANDLE),
     swapchainManager(nullptr),
     commandManager(nullptr),
-    framebufferResized(false)
-
-{
+    framebufferResized(false),
+    cubeMesh(nullptr) {
 	std::cout << "[VulkanManager] : VulkanManager created." << std::endl;
 
 	// Set user pointer so callback can access this instance
@@ -248,12 +247,7 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapchainManager->getSwapchainExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	// --- Bind dos Buffers ---
-	VkBuffer     vertexBuffers[] = {resourceManager->getVkBuffer(vertexBuffer)};
-	VkDeviceSize offsets[]       = {0};
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-	vkCmdBindIndexBuffer(commandBuffer, resourceManager->getVkBuffer(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
+	cubeMesh->bind(commandBuffer);
 
 	// --- Calcular Rotação ---
 	static auto startTime   = std::chrono::high_resolution_clock::now();
@@ -274,7 +268,8 @@ void VulkanManager::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	vkCmdPushConstants(commandBuffer, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 
 	// --- Desenhar Indexado ---
-	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+
+	cubeMesh->draw(commandBuffer);
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -473,52 +468,31 @@ void VulkanManager::run() {
 	// cleanup(); // Removido para evitar dupla liberação. O destrutor cuidará disso.
 }
 
-void VulkanManager::createTriangle() {
-	// 1. Definir os dados na CPU (posição + cor)
-	std::vector<Vertex> vertices = {
-	    {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},        // Vértice Superior (Vermelho)
-	    {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},         // Vértice Direito (Verde)
-	    {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}         // Vértice Esquerdo (Azul)
-	};
+// void VulkanManager::createTriangle() {
+// 	// 1. Definir os dados na CPU (posição + cor)
+// 	std::vector<Vertex> vertices = {
+// 	    {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},        // Vértice Superior (Vermelho)
+// 	    {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},         // Vértice Direito (Verde)
+// 	    {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}         // Vértice Esquerdo (Azul)
+// 	};
 
-	// 2. Usar o BufferManager para criar e subir para a GPU!
-	// Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
-	vertexBuffer = bufferManager->createVertexBuffer(
-	    vertices.data(),
-	    sizeof(Vertex) * vertices.size());
+// 	// 2. Usar o BufferManager para criar e subir para a GPU!
+// 	// Note como ficou simples: uma linha faz todo o trabalho sujo (Staging -> GPU)
+// 	vertexBuffer = bufferManager->createVertexBuffer(
+// 	    vertices.data(),
+// 	    sizeof(Vertex) * vertices.size());
 
-	std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
-}
+// 	std::cout << "[VulkanManager] : Triangle vertex buffer created." << std::endl;
+// }
 
 void VulkanManager::createCube() {
 	// 8 vértices de um cubo (Posição XYZ, Cor RGB)
-	std::vector<Vertex> vertices = {
-	    // Frente
-	    {{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},        // 0
-	    {{0.5f, -0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},         // 1
-	    {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},          // 2
-	    {{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},         // 3
-	    // Trás
-	    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}},        // 4
-	    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}},         // 5
-	    {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},          // 6
-	    {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}          // 7
-	};
 
-	// Índices para formar os triângulos
-	std::vector<uint32_t> indices = {
-	    0, 1, 2, 2, 3, 0,        // Frente
-	    1, 5, 6, 6, 2, 1,        // Direita
-	    5, 4, 7, 7, 6, 5,        // Trás
-	    4, 0, 3, 3, 7, 4,        // Esquerda
-	    3, 2, 6, 6, 7, 3,        // Topo
-	    4, 5, 1, 1, 0, 4         // Base
-	};
+	MeshData cubeData = MeshFactory::makeCube();
 
-	indexCount = static_cast<uint32_t>(indices.size());
+	cubeMesh = std::make_unique<Mesh>(bufferManager.get());
 
-	vertexBuffer = bufferManager->createVertexBuffer(vertices.data(), sizeof(Vertex) * vertices.size());
-	indexBuffer  = bufferManager->createIndexBuffer(indices.data(), sizeof(uint32_t) * indices.size());
+	cubeMesh->upload(MeshFactory::makeQuad(), *bufferManager);
 
 	std::cout << "[VulkanManager] : Cube created." << std::endl;
 }

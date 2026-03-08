@@ -16,10 +16,9 @@ BufferManager::~BufferManager() {
 
 BufferHandle BufferManager::createStagingBuffer(size_t size) {
 	BufferHandle stagingBuffer = resources.createBuffer({// "Designated Initializers" (do C++20).
-		.size        = size,
-		.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		.memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU
-	});
+	                                                     .size        = size,
+	                                                     .usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	                                                     .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU});
 
 	return stagingBuffer;
 }
@@ -30,11 +29,10 @@ BufferHandle BufferManager::createVertexBuffer(const void *data, size_t size) {
 	updateBuffer(stagingBuffer, data, size);
 
 	BufferHandle vertexBuffer = resources.createBuffer(
-	{// "Designated Initializers" (do C++20).
-		.size        = size,
-		.usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY
-	});
+	    {// "Designated Initializers" (do C++20).
+	     .size        = size,
+	     .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+	     .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY});
 
 	copyBuffer(stagingBuffer, vertexBuffer, size);
 
@@ -44,36 +42,32 @@ BufferHandle BufferManager::createVertexBuffer(const void *data, size_t size) {
 }
 
 BufferHandle BufferManager::createIndexBuffer(const void *data, size_t size) {
-   // Cria o Staging
-   BufferHandle stagingBuffer = createStagingBuffer(size);
+	// Cria o Staging
+	BufferHandle stagingBuffer = createStagingBuffer(size);
 
-   // Carrega os dados no Staging
-   updateBuffer(stagingBuffer, data, size);
+	// Carrega os dados no Staging
+	updateBuffer(stagingBuffer, data, size);
 
-   // Cria o buffer final na GPU (Agora com a flag de INDEX BUFFER)
-   BufferHandle indexBuffer = resources.createBuffer({
-       .size        = size,
-       .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
-       .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY
-   });
+	// Cria o buffer final na GPU (Agora com a flag de INDEX BUFFER)
+	BufferHandle indexBuffer = resources.createBuffer({.size        = size,
+	                                                   .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+	                                                   .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY});
 
-   // Move do Staging para o final
-   copyBuffer(stagingBuffer, indexBuffer, size);
+	// Move do Staging para o final
+	copyBuffer(stagingBuffer, indexBuffer, size);
 
-   // Libera o Staging
-   resources.destroyBuffer(stagingBuffer);
+	// Libera o Staging
+	resources.destroyBuffer(stagingBuffer);
 
-   return indexBuffer;
+	return indexBuffer;
 }
 
 BufferHandle BufferManager::createUniformBuffer(size_t size) {
-	BufferHandle uniformBuffer = resources.createBuffer({
-			.size        = size,
-			.usage       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-			.memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU 
-		});
+	BufferHandle uniformBuffer = resources.createBuffer({.size        = size,
+	                                                     .usage       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+	                                                     .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU});
 
-		return uniformBuffer;
+	return uniformBuffer;
 }
 
 void BufferManager::copyBuffer(BufferHandle srcHandle, BufferHandle dstHandle, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
@@ -146,4 +140,11 @@ void BufferManager::updateBuffer(BufferHandle buffer, const void *data, size_t s
 	void *mappedData = mapBuffer(buffer);
 	memcpy(mappedData, data, size);
 	unmapBuffer(buffer);
+}
+
+void BufferManager::destroyBuffer(BufferHandle& handle){ // Acredito que não precise passar por referencia, mas na minha cabeça faz mais sentido
+	if (handle != INVALID_HANDLE) {
+		resources.destroyBuffer(handle);
+		handle = INVALID_HANDLE;
+	} 
 }
